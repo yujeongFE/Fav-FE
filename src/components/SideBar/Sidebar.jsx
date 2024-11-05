@@ -1,6 +1,8 @@
 import React from "react";
+import { useState } from "react";
 
-const Sidebar = ({ activeNav, setActiveNav }) => {
+const Sidebar = () => {
+  const [activeNav, setActiveNav] = useState(false);
   return (
     <div
       style={{
