@@ -1,10 +1,9 @@
 // Router: 각 URL에 따른 page 컴포넌트 연결
 import { createBrowserRouter } from "react-router-dom";
 import Board from "../routes/board/pages.jsx";
-import Dashboard from "../components/dashboard.jsx";
+import DashBoard from "../routes/dashboard/pages.jsx";
 import SignupForm from "../components/Auth/SignupForm.jsx";
 import Login from "../components/Auth/LoginService.jsx";
-
 export const mainRoutes = [
   {
     path: "/",
@@ -23,10 +22,9 @@ export const mainRoutes = [
   },
   {
     path: "/dashboard",
-    element: <Dashboard />,
+    element: <DashBoard />,
     index: true,
-  }
+  },
 ];
-
 const router = createBrowserRouter(mainRoutes);
 export default router;
