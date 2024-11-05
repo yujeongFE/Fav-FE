@@ -97,7 +97,7 @@ function FeedItem({ item, onLike, onToggleDetails }) {
   );
 }
 
-export default function Component() {
+export default function UserNewsFeed() {
   const [feedItems, setFeedItems] = useState([]);
   const [loading, setLoading] = useState(false);
   const containerRef = useRef(null);
