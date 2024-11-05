@@ -1,8 +1,16 @@
 import React from "react";
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 const Sidebar = () => {
-  const [activeNav, setActiveNav] = useState(false);
+  const navigate = useNavigate();
+  const [activeNav, setActiveNav] = useState("");
+
+  const handleClickBoard = (path) => {
+    setActiveNav(path);
+    navigate("/board");
+  };
+
   return (
     <div
       style={{
@@ -48,7 +56,7 @@ const Sidebar = () => {
           <span style={{ marginRight: "10px", color: "black" }}>📊 대시보드</span>
         </button>
         <button
-          onClick={() => setActiveNav("board")}
+          onClick={() => handleClickBoard("board")}
           style={{
             display: "flex",
             alignItems: "center",
