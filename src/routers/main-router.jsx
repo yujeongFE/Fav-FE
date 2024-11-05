@@ -2,8 +2,20 @@
 import { createBrowserRouter } from "react-router-dom";
 import Board from "../routes/board/pages.jsx";
 import Dashboard from "../components/dashboard.jsx";
+import SignupForm from "../components/Auth/SignupForm.jsx";
+import Login from "../components/Auth/LoginService.jsx";
 
 export const mainRoutes = [
+  {
+    path: "/",
+    element: <Login />,
+    index: true,
+  },
+  {
+    path: "/signup",
+    element: <SignupForm />,
+    index: true,
+  },
   {
     path: "/board",
     element: <Board />,

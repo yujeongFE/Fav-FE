@@ -1,9 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 export default function Login() {
   const [isHovered, setIsHovered] = useState(false);
   const [loginHover, setLoginHover] = useState(false);
   const [signupHover, setSignupHover] = useState(false);
+  const navigate = useNavigate();
 
   return (
     <div style={{
@@ -15,7 +17,7 @@ export default function Login() {
       backgroundColor: '#FFECB3',
       padding: '16px',
       boxSizing: 'border-box'
-    }}>
+      }}>
       <div style={{
         width: '100%',
         maxWidth: '400px',
@@ -25,7 +27,7 @@ export default function Login() {
         boxShadow: '0 4px 8px rgba(0, 0, 0, 0.2)',
         textAlign: 'center',
         boxSizing: 'border-box',
-      }}>
+        }}>
         <div
           style={{
             width: '128px',
@@ -113,6 +115,7 @@ export default function Login() {
           </button>
           <button
             type="button"
+            onClick={() => navigate("/signup")}
             onMouseEnter={() => setSignupHover(true)}
             onMouseLeave={() => setSignupHover(false)}
             style={{
