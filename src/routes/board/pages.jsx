@@ -1,213 +1,110 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState } from "react";
+import "bootstrap/dist/css/bootstrap.min.css";
+import "bootstrap-icons/font/bootstrap-icons.css";
+import Sidebar from "../../components/SideBar/Sidebar";
+import { Header } from "../../components/Header/Header";
+import { PostModal } from "../../components/Modal/PostModal";
 
-function HeartIcon({ filled }) {
-  return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      width="24"
-      height="24"
-      viewBox="0 0 24 24"
-      fill={filled ? "currentColor" : "none"}
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z" />
-    </svg>
-  );
-}
-
-function FeedItem({ item, onLike, onToggleDetails }) {
-  return (
-    <div
-      style={{
-        border: "1px solid #e0e0e0",
-        borderRadius: "8px",
-        padding: "16px",
-        marginBottom: "16px",
-        backgroundColor: "white",
-      }}
-    >
-      <div style={{ display: "flex", justifyContent: "space-between" }}>
-        <div style={{ display: "flex", gap: "12px" }}>
-          <img
-            src={item.image}
-            alt={`${item.title} 가게 이미지`}
-            style={{
-              width: "40px",
-              height: "40px",
-              borderRadius: "50%",
-              objectFit: "cover",
-            }}
-          />
-          <div>
-            <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-              <h2 style={{ margin: 0, fontSize: "16px", fontWeight: "bold" }}>
-                {item.title}
-              </h2>
-              <span style={{ fontSize: "14px", color: "#666" }}>
-                {item.time}
-              </span>
-            </div>
-            <p style={{ margin: "8px 0 0", fontSize: "14px", color: "#333" }}>
-              {item.message}
-            </p>
-          </div>
-        </div>
-        <button
-          onClick={() => onLike(item.id)}
-          style={{
-            background: "none",
-            border: "none",
-            cursor: "pointer",
-            color: item.liked ? "red" : "#666",
-          }}
-          aria-label={item.liked ? "좋아요 취소" : "좋아요"}
-        >
-          <HeartIcon filled={item.liked} />
-        </button>
-      </div>
-      {item.showDetails && (
-        <div style={{ marginTop: "12px", fontSize: "14px", color: "#333" }}>
-          {item.details}
-        </div>
-      )}
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "flex-end",
-          marginTop: "8px",
-        }}
-      >
-        <button
-          onClick={() => onToggleDetails(item.id)}
-          style={{
-            background: "none",
-            border: "none",
-            color: "#666",
-            fontSize: "14px",
-            cursor: "pointer",
-          }}
-        >
-          {item.showDetails ? "접기" : "더보기"}
-        </button>
-      </div>
-    </div>
-  );
-}
-
-export default function Component() {
-  const [feedItems, setFeedItems] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const containerRef = useRef(null);
-
-  const loadMoreItems = () => {
-    setLoading(true);
-    setTimeout(() => {
-      const newItems = Array.from({ length: 5 }, (_, i) => ({
-        id: feedItems.length + i + 1,
-        title: `가게 ${feedItems.length + i + 1}`,
-        time: "11:04",
-        message:
-          "안녕하세요 단골여러분. 좋은 소식이 있습니다. 자세한 내용은 더보기를 클릭해주세요...",
-        details:
-          "이번 주 금요일부터 일요일까지 전 메뉴 20% 할인 이벤트를 진행합니다. 많은 관심 부탁드립니다!",
-        image: `/placeholder.svg?height=40&width=40&text=${feedItems.length + i + 1}`,
-        liked: false,
-        showDetails: false,
-      }));
-      setFeedItems((prev) => [...prev, ...newItems]);
-      setLoading(false);
-    }, 1000);
-  };
-
-  useEffect(() => {
-    loadMoreItems();
-  }, []);
-
-  useEffect(() => {
-    const container = containerRef.current;
-    if (!container) return;
-
-    const handleScroll = () => {
-      if (
-        container.scrollHeight - container.scrollTop <=
-          container.clientHeight + 1 &&
-        !loading
-      ) {
-        loadMoreItems();
-      }
-    };
-
-    container.addEventListener("scroll", handleScroll);
-    return () => container.removeEventListener("scroll", handleScroll);
-  }, [loading]);
-
-  const handleLike = (id) => {
-    setFeedItems((prev) =>
-      prev.map((item) =>
-        item.id === id ? { ...item, liked: !item.liked } : item
-      )
-    );
-  };
-
-  const handleToggleDetails = (id) => {
-    setFeedItems((prev) =>
-      prev.map((item) =>
-        item.id === id ? { ...item, showDetails: !item.showDetails } : item
-      )
-    );
-  };
-
-  return (
-    <div
-      style={{
-        display: "flex",
-        flexDirection: "column",
-        width: "100%",
-        maxWidth: "400px",
-        margin: "0 auto",
-        height: "100vh",
-        fontFamily: "Arial, sans-serif",
-      }}
-    >
-      {/* App Icon */}
-      <div
-        style={{ display: "flex", justifyContent: "center", padding: "16px" }}
-      >
+const MessageCard = ({ content, date, status }) => (
+  <div className={`card mb-3 ${status ? "bg-light" : ""}`}>
+    <div className="card-body">
+      <div className="d-flex">
         <img
-          src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-BpDKq494k2vGEAtePMrbcfdRmb8N5d.png"
-          alt="커피 컵 로고"
-          style={{
-            width: "64px",
-            height: "64px",
-            borderRadius: "50%",
-            objectFit: "cover",
-          }}
+          src="https://github.com/mdo.png"
+          alt="User Avatar"
+          width="32"
+          height="32"
+          className="rounded-circle me-2"
         />
+        <div className="flex-grow-1">
+          <p className="mb-1">{content}</p>
+          <small className="text-muted">{date}</small>
+        </div>
+        {status && (
+          <button
+            className={`btn btn-sm ${status === "busy" ? "btn-danger" : "btn-success"}`}
+          >
+            {status === "busy" ? "혼잡해요" : "여유로워요"}
+          </button>
+        )}
       </div>
+    </div>
+  </div>
+);
 
-      {/* Scrollable Feed Container */}
-      <div
-        ref={containerRef}
-        style={{
-          flex: 1,
-          overflowY: "auto",
-          padding: "16px",
-          backgroundColor: "#f0f0f0",
-        }}
-      >
-        {feedItems.map((item) => (
-          <FeedItem
-            key={item.id}
-            item={item}
-            onLike={handleLike}
-            onToggleDetails={handleToggleDetails}
-          />
-        ))}
-        {loading && <p style={{ textAlign: "center" }}>로딩 중...</p>}
+const MainContent = ({ handleModalOpen }) => (
+  <main className="flex-grow-1 p-3 d-flex flex-column overflow-hidden">
+    <div className="d-flex justify-content-between align-items-center mb-3">
+      <div>
+        <h1 className="h2">메가커피 성수역점</h1>
+        <div className="mt-2">
+          <button className="btn bg-primary me-2" style={{ color: "white" }}>
+            사장님
+          </button>
+          <button className="btn btn-outline-secondary">고객님</button>
+        </div>
+      </div>
+      <button className="btn btn-primary" onClick={handleModalOpen}>
+        글 추가하기
+      </button>
+    </div>
+
+    <div className="overflow-auto flex-grow-1">
+      <MessageCard
+        content="오늘은 너무 더워요"
+        date="2024.11.04"
+        status="busy"
+      />
+      <MessageCard
+        content="시럽이 너무 많아요"
+        date="2024.11.04"
+        status={null}
+      />
+      <MessageCard
+        content="나는 너무너무 실상하고"
+        date="2024.11.03"
+        status="relaxed"
+      />
+      <MessageCard
+        content="오늘의 특별 할인!"
+        date="2024.11.04"
+        status={null}
+      />
+      <MessageCard
+        content="다음주에 새로운 메뉴 출시!"
+        date="2024.11.03"
+        status="busy"
+      />
+      <MessageCard
+        content="고객님들의 소중한 의견을 주세요!"
+        date="2024.11.02"
+        status="relaxed"
+      />
+    </div>
+  </main>
+);
+
+const Board = () => {
+  const [writing, setWriting] = useState(false);
+
+  const handleModalOpen = () => {
+    setWriting(true);
+  };
+
+  const handleModalClose = () => {
+    setWriting(false);
+  };
+
+  return (
+    <div className="d-flex vh-100" style={{ width: "100vw" }}>
+      <Sidebar writing={writing} />
+      <div className="d-flex flex-column flex-grow-1 overflow-hidden">
+        <Header />
+        <MainContent handleModalOpen={handleModalOpen} />
+        <PostModal writing={writing} onClose={handleModalClose} />
       </div>
     </div>
   );
-}
+};
+
+export default Board;
