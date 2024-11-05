@@ -1,9 +1,9 @@
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 export default function SignupForm() {
   const navigate = useNavigate();
-  const [userType, setUserType] = useState("");
+  const [userType, setUserType] = useState('');
   const [isHovered, setIsHovered] = useState(false);
   const [formData, setFormData] = useState({
     email: '',
@@ -12,7 +12,7 @@ export default function SignupForm() {
     nickname: '',
     address: '',
     name: '',
-    birthdate: ''
+    birthdate: '',
   });
 
   const handleSubmit = (e) => {
@@ -22,9 +22,9 @@ export default function SignupForm() {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [name]: value
+      [name]: value,
     }));
   };
 
@@ -148,7 +148,9 @@ export default function SignupForm() {
                   onClick={() => setUserType('customer')}
                   style={{
                     ...styles.selectButton,
-                    ...(userType === 'customer' ? styles.selectButtonActive : {}),
+                    ...(userType === 'customer'
+                      ? styles.selectButtonActive
+                      : {}),
                   }}
                 >
                   고객
@@ -157,7 +159,9 @@ export default function SignupForm() {
             </div>
 
             <div style={styles.formGroup}>
-              <label htmlFor="email" style={styles.label}>이메일</label>
+              <label htmlFor="email" style={styles.label}>
+                이메일
+              </label>
               <input
                 id="email"
                 name="email"
@@ -171,7 +175,9 @@ export default function SignupForm() {
             </div>
 
             <div style={styles.formGroup}>
-              <label htmlFor="password" style={styles.label}>비밀번호</label>
+              <label htmlFor="password" style={styles.label}>
+                비밀번호
+              </label>
               <input
                 id="password"
                 name="password"
@@ -185,7 +191,9 @@ export default function SignupForm() {
             </div>
 
             <div style={styles.formGroup}>
-              <label htmlFor="passwordConfirm" style={styles.label}>비밀번호 확인</label>
+              <label htmlFor="passwordConfirm" style={styles.label}>
+                비밀번호 확인
+              </label>
               <input
                 id="passwordConfirm"
                 name="passwordConfirm"
@@ -200,7 +208,9 @@ export default function SignupForm() {
 
             {userType === 'customer' && (
               <div style={styles.formGroup}>
-                <label htmlFor="nickname" style={styles.label}>닉네임</label>
+                <label htmlFor="nickname" style={styles.label}>
+                  닉네임
+                </label>
                 <input
                   id="nickname"
                   name="nickname"
@@ -216,7 +226,9 @@ export default function SignupForm() {
 
             {userType === 'owner' && (
               <div style={styles.formGroup}>
-                <label htmlFor="address" style={styles.label}>주소</label>
+                <label htmlFor="address" style={styles.label}>
+                  주소
+                </label>
                 <input
                   id="address"
                   name="address"
@@ -231,7 +243,9 @@ export default function SignupForm() {
             )}
 
             <div style={styles.formGroup}>
-              <label htmlFor="name" style={styles.label}>이름</label>
+              <label htmlFor="name" style={styles.label}>
+                이름
+              </label>
               <input
                 id="name"
                 name="name"
@@ -245,7 +259,9 @@ export default function SignupForm() {
             </div>
 
             <div style={styles.formGroup}>
-              <label htmlFor="birthdate" style={styles.label}>생년월일</label>
+              <label htmlFor="birthdate" style={styles.label}>
+                생년월일
+              </label>
               <input
                 id="birthdate"
                 name="birthdate"
@@ -262,8 +278,9 @@ export default function SignupForm() {
               type="submit"
               onMouseEnter={() => setIsHovered(true)}
               onMouseLeave={() => setIsHovered(false)}
-              onClick={() => navigate("/dashboard")}
-              style={styles.submitButton}>
+              onClick={() => navigate('/dashboard')}
+              style={styles.submitButton}
+            >
               등록하기
             </button>
           </form>
