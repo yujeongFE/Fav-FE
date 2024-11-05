@@ -170,6 +170,9 @@ export default function UserNewsFeed() {
         margin: "0 auto",
         height: "100vh",
         fontFamily: "Arial, sans-serif",
+        justifyContent: "center", // 수직 중앙 정렬
+        alignItems: "center", // 수평 중앙 정렬
+        backgroundColor: "#f0f0f0", // 배경색 추가
       }}
     >
       {/* App Icon */}
@@ -188,7 +191,6 @@ export default function UserNewsFeed() {
             width: "64px",
             height: "64px",
             borderRadius: "50%",
-            objectFit: "cover",
           }}
         />
       </div>
@@ -201,6 +203,7 @@ export default function UserNewsFeed() {
           overflowY: "auto",
           padding: "16px",
           backgroundColor: "#f0f0f0",
+          width: "100%",
         }}
       >
         {feedItems.map((item) => (
