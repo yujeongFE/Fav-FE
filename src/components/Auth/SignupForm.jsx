@@ -1,7 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 export default function SignupForm() {
-  const [userType, setUserType] = useState('');
+  const navigate = useNavigate();
+  const [userType, setUserType] = useState("");
   const [isHovered, setIsHovered] = useState(false);
   const [formData, setFormData] = useState({
     email: '',
@@ -260,8 +262,8 @@ export default function SignupForm() {
               type="submit"
               onMouseEnter={() => setIsHovered(true)}
               onMouseLeave={() => setIsHovered(false)}
-              style={styles.submitButton}
-            >
+              onClick={() => navigate("/dashboard")}
+              style={styles.submitButton}>
               등록하기
             </button>
           </form>
