@@ -21,7 +21,9 @@ const MessageCard = ({ content, date, status }) => (
           <small className="text-muted">{date}</small>
         </div>
         {status && (
-          <button className={`btn btn-sm ${status === "busy" ? "btn-danger" : "btn-success"}`}>
+          <button
+            className={`btn btn-sm ${status === "busy" ? "btn-danger" : "btn-success"}`}
+          >
             {status === "busy" ? "혼잡해요" : "여유로워요"}
           </button>
         )}
@@ -48,12 +50,36 @@ const MainContent = ({ handleModalOpen }) => (
     </div>
 
     <div className="overflow-auto flex-grow-1">
-      <MessageCard content="오늘은 너무 더워요" date="2024.11.04" status="busy" />
-      <MessageCard content="시럽이 너무 많아요" date="2024.11.04" status={null} />
-      <MessageCard content="나는 너무너무 실상하고" date="2024.11.03" status="relaxed" />
-      <MessageCard content="오늘의 특별 할인!" date="2024.11.04" status={null} />
-      <MessageCard content="다음주에 새로운 메뉴 출시!" date="2024.11.03" status="busy" />
-      <MessageCard content="고객님들의 소중한 의견을 주세요!" date="2024.11.02" status="relaxed" />
+      <MessageCard
+        content="오늘은 너무 더워요"
+        date="2024.11.04"
+        status="busy"
+      />
+      <MessageCard
+        content="시럽이 너무 많아요"
+        date="2024.11.04"
+        status={null}
+      />
+      <MessageCard
+        content="나는 너무너무 실상하고"
+        date="2024.11.03"
+        status="relaxed"
+      />
+      <MessageCard
+        content="오늘의 특별 할인!"
+        date="2024.11.04"
+        status={null}
+      />
+      <MessageCard
+        content="다음주에 새로운 메뉴 출시!"
+        date="2024.11.03"
+        status="busy"
+      />
+      <MessageCard
+        content="고객님들의 소중한 의견을 주세요!"
+        date="2024.11.02"
+        status="relaxed"
+      />
     </div>
   </main>
 );
