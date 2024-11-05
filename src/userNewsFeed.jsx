@@ -107,7 +107,7 @@ export default function Component() {
     setTimeout(() => {
       const newItems = Array.from({ length: 5 }, (_, i) => ({
         id: feedItems.length + i + 1,
-        title: `가게 ${feedItems.length + i + 1}`,
+        title: ` ${feedItems.length + i + 1}`,
         time: "11:04",
         message:
           "안녕하세요 단골여러분. 좋은 소식이 있습니다. 자세한 내용은 더보기를 클릭해주세요...",
@@ -174,7 +174,12 @@ export default function Component() {
     >
       {/* App Icon */}
       <div
-        style={{ display: "flex", justifyContent: "center", padding: "16px" }}
+        style={{
+          display: "flex",
+          justifyContent: "center",
+          padding: "16px",
+          backgroundColor: "#f0f0f0",
+        }}
       >
         <img
           src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-BpDKq494k2vGEAtePMrbcfdRmb8N5d.png"

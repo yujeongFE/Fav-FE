@@ -50,7 +50,6 @@ function FeedItem({ item, onLike, onToggleDetails }) {
                 {item.time}
               </span>
             </div>
-
             <p style={{ margin: "8px 0 0", fontSize: "14px", color: "#333" }}>
               {item.message}
             </p>
@@ -98,7 +97,7 @@ function FeedItem({ item, onLike, onToggleDetails }) {
   );
 }
 
-export default function UserNewsFeed() {
+export default function Component() {
   const [feedItems, setFeedItems] = useState([]);
   const [loading, setLoading] = useState(false);
   const containerRef = useRef(null);
@@ -114,12 +113,11 @@ export default function UserNewsFeed() {
           "안녕하세요 단골여러분. 좋은 소식이 있습니다. 자세한 내용은 더보기를 클릭해주세요...",
         details:
           "이번 주 금요일부터 일요일까지 전 메뉴 20% 할인 이벤트를 진행합니다. 많은 관심 부탁드립니다!",
-        image: `db에서받아오기${feedItems.length + i + 1}`,
+        image: `/placeholder.svg?height=40&width=40&text=${feedItems.length + i + 1}`,
         liked: false,
         showDetails: false,
       }));
       setFeedItems((prev) => [...prev, ...newItems]);
-
       setLoading(false);
     }, 1000);
   };
@@ -176,28 +174,23 @@ export default function UserNewsFeed() {
     >
       {/* App Icon */}
       <div
-        style={{ display: "flex", justifyContent: "center", padding: "16px" }}
+        style={{
+          display: "flex",
+          justifyContent: "center",
+          padding: "16px",
+          backgroundColor: "#f0f0f0",
+        }}
       >
-        <div
+        <img
+          src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-BpDKq494k2vGEAtePMrbcfdRmb8N5d.png"
+          alt="커피 컵 로고"
           style={{
             width: "64px",
             height: "64px",
-            backgroundColor: "#4a90e2",
-            borderRadius: "16px",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
+            borderRadius: "50%",
+            objectFit: "cover",
           }}
-        >
-          <div
-            style={{
-              width: "32px",
-              height: "32px",
-              border: "4px solid white",
-              borderRadius: "50%",
-            }}
-          />
-        </div>
+        />
       </div>
 
       {/* Scrollable Feed Container */}
