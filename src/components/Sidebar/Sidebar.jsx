@@ -26,18 +26,15 @@ const Sidebar = () => {
           alignItems: "center",
           marginBottom: "40px",
         }}>
-        <div>
-          <img
-          src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-BpDKq494k2vGEAtePMrbcfdRmb8N5d.png"
+        <div
           style={{
-            width: "64px",
-            height: "64px",
-            borderRadius: "50%",
-            objectFit: "cover",
-          }}
-        />
-        </div>
-        <span style={{ fontWeight: "bold", fontSize: "18px", position: "relative", top: "2px", }}>Fav</span>
+            width: "32px",
+            height: "32px",
+            backgroundColor: "#0066FF",
+            borderRadius: "8px",
+            marginRight: "12px",
+          }}></div>
+        <span style={{ fontWeight: "bold", fontSize: "18px" }}>Fav</span>
       </div>
 
       <nav>
