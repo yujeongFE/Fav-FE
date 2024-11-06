@@ -29,7 +29,6 @@ const Sidebar = () => {
         <div>
           <img
           src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-BpDKq494k2vGEAtePMrbcfdRmb8N5d.png"
-          alt="커피 컵 로고"
           style={{
             width: "64px",
             height: "64px",
