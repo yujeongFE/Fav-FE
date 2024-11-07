@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 
+// 가짜 API 호출 함수 (실제로 서버에서 데이터를 받아올 때 변경)
 const fetchPosts = async () => {
   const response = await fetch("http://localhost:3000/api");
   const data = await response.json();
@@ -24,7 +25,9 @@ function HeartIcon({ filled }) {
   );
 }
 
-function FeedItem({ item, onLike, onToggleDetails }) {
+function FeedItem({ item, onLike }) {
+  const content = item.content || ""; // 본문 내용
+
   return (
     <div
       style={{
@@ -57,7 +60,7 @@ function FeedItem({ item, onLike, onToggleDetails }) {
               </span>
             </div>
             <p style={{ margin: "8px 0 0", fontSize: "14px", color: "#333" }}>
-              {item.message}
+              {content} {/* 전체 본문을 표시 */}
             </p>
           </div>
         </div>
@@ -74,31 +77,6 @@ function FeedItem({ item, onLike, onToggleDetails }) {
           <HeartIcon filled={item.liked} />
         </button>
       </div>
-      {item.showDetails && (
-        <div style={{ marginTop: "12px", fontSize: "14px", color: "#333" }}>
-          {item.details}
-        </div>
-      )}
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "flex-end",
-          marginTop: "8px",
-        }}
-      >
-        <button
-          onClick={() => onToggleDetails(item.id)}
-          style={{
-            background: "none",
-            border: "none",
-            color: "#666",
-            fontSize: "14px",
-            cursor: "pointer",
-          }}
-        >
-          {item.showDetails ? "접기" : "더보기"}
-        </button>
-      </div>
     </div>
   );
 }
@@ -109,6 +87,7 @@ export default function UserNewsFeed() {
   const [searchExpanded, setSearchExpanded] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState([]);
+  const [heartLiked, setHeartLiked] = useState(false);
 
   // 데이터 로딩 (fetch 요청)
   useEffect(() => {
@@ -122,12 +101,31 @@ export default function UserNewsFeed() {
     loadPosts();
   }, []);
 
-  const handleLike = (id) => {
+  const handleLike = async (id) => {
     setFeedItems((prev) =>
       prev.map((item) =>
         item.id === id ? { ...item, liked: !item.liked } : item
       )
     );
+
+    // 좋아요 상태를 서버에 반영하는 부분
+    try {
+      const item = feedItems.find((item) => item.id === id);
+      const response = await fetch(`http://localhost:3000/api`, {
+        // URL 수정
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ liked: !item.liked }), // 필요시 liked만 보냄
+      });
+
+      if (!response.ok) {
+        throw new Error("서버와의 통신에 실패했습니다.");
+      }
+    } catch (error) {
+      console.error("좋아요 상태를 변경하는 중 오류가 발생했습니다:", error);
+    }
   };
 
   const handleToggleDetails = (id) => {
