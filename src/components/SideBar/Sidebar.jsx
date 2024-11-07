@@ -75,6 +75,23 @@ const Sidebar = () => {
           }}>
           <span style={{ marginRight: "10px", color: "black" }}>📋 게시판</span>
         </button>
+        <button
+          onClick={() => handleClickBoard("storeInfo")}
+          style={{
+            display: "flex",
+            alignItems: "center",
+            width: "100%",
+            padding: "10px",
+            marginBottom: "10px",
+            border: "none",
+            borderRadius: "4px",
+            backgroundColor: activeNav === "storeInfo" ? "#f0f0f0" : "transparent",
+            cursor: "pointer",
+            textAlign: "left",
+            fontSize: "14px",
+          }}>
+          <span style={{ marginRight: "10px", color: "black" }}>🏪 가게 정보</span>
+        </button>
       </nav>
     </div>
   );
