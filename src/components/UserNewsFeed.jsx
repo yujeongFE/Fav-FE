@@ -1,4 +1,11 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
+
+// 가짜 API 호출 함수 (실제로 서버에서 데이터를 받아올 때 변경)
+const fetchPosts = async () => {
+  const response = await fetch("http://localhost:3000/api");
+  const data = await response.json();
+  return data; // 받은 데이터를 그대로 반환
+};
 
 function HeartIcon({ filled }) {
   return (
@@ -18,14 +25,16 @@ function HeartIcon({ filled }) {
   );
 }
 
-function FeedItem({ item, onLike, onToggleDetails }) {
+function FeedItem({ item, onLike }) {
+  const content = item.content || ""; // 본문 내용
+
   return (
     <div
       style={{
         border: "1px solid #e0e0e0",
-        borderRadius: "8px",
+        borderRadius: "20px",
         padding: "16px",
-        marginBottom: "16px",
+        marginBottom: "10px",
         backgroundColor: "white",
       }}
     >
@@ -51,7 +60,7 @@ function FeedItem({ item, onLike, onToggleDetails }) {
               </span>
             </div>
             <p style={{ margin: "8px 0 0", fontSize: "14px", color: "#333" }}>
-              {item.message}
+              {content} {/* 전체 본문을 표시 */}
             </p>
           </div>
         </div>
@@ -68,31 +77,6 @@ function FeedItem({ item, onLike, onToggleDetails }) {
           <HeartIcon filled={item.liked} />
         </button>
       </div>
-      {item.showDetails && (
-        <div style={{ marginTop: "12px", fontSize: "14px", color: "#333" }}>
-          {item.details}
-        </div>
-      )}
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "flex-end",
-          marginTop: "8px",
-        }}
-      >
-        <button
-          onClick={() => onToggleDetails(item.id)}
-          style={{
-            background: "none",
-            border: "none",
-            color: "#666",
-            fontSize: "14px",
-            cursor: "pointer",
-          }}
-        >
-          {item.showDetails ? "접기" : "더보기"}
-        </button>
-      </div>
     </div>
   );
 }
@@ -100,56 +84,48 @@ function FeedItem({ item, onLike, onToggleDetails }) {
 export default function UserNewsFeed() {
   const [feedItems, setFeedItems] = useState([]);
   const [loading, setLoading] = useState(false);
-  const containerRef = useRef(null);
+  const [searchExpanded, setSearchExpanded] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchResults, setSearchResults] = useState([]);
+  const [heartLiked, setHeartLiked] = useState(false);
 
-  const loadMoreItems = () => {
+  // 데이터 로딩 (fetch 요청)
+  useEffect(() => {
     setLoading(true);
-    setTimeout(() => {
-      const newItems = Array.from({ length: 5 }, (_, i) => ({
-        id: feedItems.length + i + 1,
-        title: `가게 ${feedItems.length + i + 1}`,
-        time: "11:04",
-        message:
-          "안녕하세요 단골여러분. 좋은 소식이 있습니다. 자세한 내용은 더보기를 클릭해주세요...",
-        details:
-          "이번 주 금요일부터 일요일까지 전 메뉴 20% 할인 이벤트를 진행합니다. 많은 관심 부탁드립니다!",
-        image: `/placeholder.svg?height=40&width=40&text=${feedItems.length + i + 1}`,
-        liked: false,
-        showDetails: false,
-      }));
-      setFeedItems((prev) => [...prev, ...newItems]);
+    const loadPosts = async () => {
+      const data = await fetchPosts();
+      setFeedItems(data); // 받아온 데이터를 상태에 설정
       setLoading(false);
-    }, 1000);
-  };
-
-  useEffect(() => {
-    loadMoreItems();
-  }, []);
-
-  useEffect(() => {
-    const container = containerRef.current;
-    if (!container) return;
-
-    const handleScroll = () => {
-      if (
-        container.scrollHeight - container.scrollTop <=
-          container.clientHeight + 1 &&
-        !loading
-      ) {
-        loadMoreItems();
-      }
     };
 
-    container.addEventListener("scroll", handleScroll);
-    return () => container.removeEventListener("scroll", handleScroll);
-  }, [loading]);
+    loadPosts();
+  }, []);
 
-  const handleLike = (id) => {
+  const handleLike = async (id) => {
     setFeedItems((prev) =>
       prev.map((item) =>
         item.id === id ? { ...item, liked: !item.liked } : item
       )
     );
+
+    // 좋아요 상태를 서버에 반영하는 부분
+    try {
+      const item = feedItems.find((item) => item.id === id);
+      const response = await fetch(`http://localhost:3000/api`, {
+        // URL 수정
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ liked: !item.liked }), // 필요시 liked만 보냄
+      });
+
+      if (!response.ok) {
+        throw new Error("서버와의 통신에 실패했습니다.");
+      }
+    } catch (error) {
+      console.error("좋아요 상태를 변경하는 중 오류가 발생했습니다:", error);
+    }
   };
 
   const handleToggleDetails = (id) => {
@@ -158,6 +134,19 @@ export default function UserNewsFeed() {
         item.id === id ? { ...item, showDetails: !item.showDetails } : item
       )
     );
+  };
+
+  const handleSearchChange = (e) => {
+    const query = e.target.value;
+    setSearchQuery(query);
+    if (query.trim() === "") {
+      setSearchResults([]);
+    } else {
+      const filteredResults = feedItems.filter((item) =>
+        item.title.toLowerCase().includes(query.toLowerCase())
+      );
+      setSearchResults(filteredResults);
+    }
   };
 
   return (
@@ -170,6 +159,9 @@ export default function UserNewsFeed() {
         margin: "0 auto",
         height: "100vh",
         fontFamily: "Arial, sans-serif",
+        justifyContent: "center",
+        alignItems: "center",
+        backgroundColor: "#f0f0f0",
       }}
     >
       {/* App Icon */}
@@ -193,25 +185,96 @@ export default function UserNewsFeed() {
         />
       </div>
 
-      {/* Scrollable Feed Container */}
+      {/* Search Bar */}
       <div
-        ref={containerRef}
+        style={{
+          width: "100%",
+          backgroundColor: "white",
+          borderRadius: "24px",
+          padding: "8px",
+          marginBottom: "16px",
+          position: "relative",
+        }}
+      >
+        <input
+          type="text"
+          placeholder="검색..."
+          value={searchQuery}
+          onChange={handleSearchChange}
+          onFocus={() => setSearchExpanded(true)}
+          style={{
+            width: "100%",
+            padding: "8px 16px",
+            border: "1px solid #ccc",
+            borderRadius: "24px",
+            outline: "none",
+            boxShadow: "0 2px 8px rgba(0,0,0,0.2)",
+            backgroundColor: "white",
+            color: "black",
+          }}
+        />
+        {searchExpanded && searchQuery && (
+          <div
+            style={{
+              position: "absolute",
+              top: "100%",
+              left: 0,
+              right: 0,
+              backgroundColor: "white",
+              border: "1px solid #ccc",
+              borderRadius: "8px",
+              maxHeight: "200px",
+              overflowY: "auto",
+              boxShadow: "0 2px 8px rgba(0,0,0,0.2)",
+              zIndex: 1,
+            }}
+          >
+            {searchResults.length > 0 ? (
+              searchResults.map((item) => (
+                <div
+                  key={item.id}
+                  style={{
+                    padding: "8px",
+                    borderBottom: "1px solid #eee",
+                    cursor: "pointer",
+                  }}
+                  onClick={() => {
+                    setSearchExpanded(false);
+                    setSearchQuery(item.title);
+                  }}
+                >
+                  {item.title}
+                </div>
+              ))
+            ) : (
+              <div style={{ padding: "8px", color: "#999" }}>
+                검색 결과가 없습니다.
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+
+      {/* Feed Container */}
+      <div
         style={{
           flex: 1,
           overflowY: "auto",
-          padding: "16px",
-          backgroundColor: "#f0f0f0",
+          width: "100%",
         }}
       >
-        {feedItems.map((item) => (
-          <FeedItem
-            key={item.id}
-            item={item}
-            onLike={handleLike}
-            onToggleDetails={handleToggleDetails}
-          />
-        ))}
-        {loading && <p style={{ textAlign: "center" }}>로딩 중...</p>}
+        {loading ? (
+          <div>로딩 중...</div>
+        ) : (
+          feedItems.map((item) => (
+            <FeedItem
+              key={item.id}
+              item={item}
+              onLike={handleLike}
+              onToggleDetails={handleToggleDetails}
+            />
+          ))
+        )}
       </div>
     </div>
   );
