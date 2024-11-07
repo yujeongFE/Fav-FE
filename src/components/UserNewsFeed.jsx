@@ -1,4 +1,10 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
+
+const fetchPosts = async () => {
+  const response = await fetch("http://localhost:3000/api");
+  const data = await response.json();
+  return data; // 받은 데이터를 그대로 반환
+};
 
 function HeartIcon({ filled }) {
   return (
@@ -23,9 +29,9 @@ function FeedItem({ item, onLike, onToggleDetails }) {
     <div
       style={{
         border: "1px solid #e0e0e0",
-        borderRadius: "8px",
+        borderRadius: "20px",
         padding: "16px",
-        marginBottom: "16px",
+        marginBottom: "10px",
         backgroundColor: "white",
       }}
     >
@@ -100,49 +106,21 @@ function FeedItem({ item, onLike, onToggleDetails }) {
 export default function UserNewsFeed() {
   const [feedItems, setFeedItems] = useState([]);
   const [loading, setLoading] = useState(false);
-  const containerRef = useRef(null);
+  const [searchExpanded, setSearchExpanded] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchResults, setSearchResults] = useState([]);
 
-  const loadMoreItems = () => {
+  // 데이터 로딩 (fetch 요청)
+  useEffect(() => {
     setLoading(true);
-    setTimeout(() => {
-      const newItems = Array.from({ length: 5 }, (_, i) => ({
-        id: feedItems.length + i + 1,
-        title: `가게 ${feedItems.length + i + 1}`,
-        time: "11:04",
-        message:
-          "안녕하세요 단골여러분. 좋은 소식이 있습니다. 자세한 내용은 더보기를 클릭해주세요...",
-        details:
-          "이번 주 금요일부터 일요일까지 전 메뉴 20% 할인 이벤트를 진행합니다. 많은 관심 부탁드립니다!",
-        image: `/placeholder.svg?height=40&width=40&text=${feedItems.length + i + 1}`,
-        liked: false,
-        showDetails: false,
-      }));
-      setFeedItems((prev) => [...prev, ...newItems]);
+    const loadPosts = async () => {
+      const data = await fetchPosts();
+      setFeedItems(data); // 받아온 데이터를 상태에 설정
       setLoading(false);
-    }, 1000);
-  };
-
-  useEffect(() => {
-    loadMoreItems();
-  }, []);
-
-  useEffect(() => {
-    const container = containerRef.current;
-    if (!container) return;
-
-    const handleScroll = () => {
-      if (
-        container.scrollHeight - container.scrollTop <=
-          container.clientHeight + 1 &&
-        !loading
-      ) {
-        loadMoreItems();
-      }
     };
 
-    container.addEventListener("scroll", handleScroll);
-    return () => container.removeEventListener("scroll", handleScroll);
-  }, [loading]);
+    loadPosts();
+  }, []);
 
   const handleLike = (id) => {
     setFeedItems((prev) =>
@@ -160,6 +138,19 @@ export default function UserNewsFeed() {
     );
   };
 
+  const handleSearchChange = (e) => {
+    const query = e.target.value;
+    setSearchQuery(query);
+    if (query.trim() === "") {
+      setSearchResults([]);
+    } else {
+      const filteredResults = feedItems.filter((item) =>
+        item.title.toLowerCase().includes(query.toLowerCase())
+      );
+      setSearchResults(filteredResults);
+    }
+  };
+
   return (
     <div
       style={{
@@ -170,9 +161,9 @@ export default function UserNewsFeed() {
         margin: "0 auto",
         height: "100vh",
         fontFamily: "Arial, sans-serif",
-        justifyContent: "center", // 수직 중앙 정렬
-        alignItems: "center", // 수평 중앙 정렬
-        backgroundColor: "#f0f0f0", // 배경색 추가
+        justifyContent: "center",
+        alignItems: "center",
+        backgroundColor: "#f0f0f0",
       }}
     >
       {/* App Icon */}
@@ -191,30 +182,101 @@ export default function UserNewsFeed() {
             width: "64px",
             height: "64px",
             borderRadius: "50%",
+            objectFit: "cover",
           }}
         />
       </div>
 
-      {/* Scrollable Feed Container */}
+      {/* Search Bar */}
       <div
-        ref={containerRef}
+        style={{
+          width: "100%",
+          backgroundColor: "white",
+          borderRadius: "24px",
+          padding: "8px",
+          marginBottom: "16px",
+          position: "relative",
+        }}
+      >
+        <input
+          type="text"
+          placeholder="검색..."
+          value={searchQuery}
+          onChange={handleSearchChange}
+          onFocus={() => setSearchExpanded(true)}
+          style={{
+            width: "100%",
+            padding: "8px 16px",
+            border: "1px solid #ccc",
+            borderRadius: "24px",
+            outline: "none",
+            boxShadow: "0 2px 8px rgba(0,0,0,0.2)",
+            backgroundColor: "white",
+            color: "black",
+          }}
+        />
+        {searchExpanded && searchQuery && (
+          <div
+            style={{
+              position: "absolute",
+              top: "100%",
+              left: 0,
+              right: 0,
+              backgroundColor: "white",
+              border: "1px solid #ccc",
+              borderRadius: "8px",
+              maxHeight: "200px",
+              overflowY: "auto",
+              boxShadow: "0 2px 8px rgba(0,0,0,0.2)",
+              zIndex: 1,
+            }}
+          >
+            {searchResults.length > 0 ? (
+              searchResults.map((item) => (
+                <div
+                  key={item.id}
+                  style={{
+                    padding: "8px",
+                    borderBottom: "1px solid #eee",
+                    cursor: "pointer",
+                  }}
+                  onClick={() => {
+                    setSearchExpanded(false);
+                    setSearchQuery(item.title);
+                  }}
+                >
+                  {item.title}
+                </div>
+              ))
+            ) : (
+              <div style={{ padding: "8px", color: "#999" }}>
+                검색 결과가 없습니다.
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+
+      {/* Feed Container */}
+      <div
         style={{
           flex: 1,
           overflowY: "auto",
-          padding: "16px",
-          backgroundColor: "#f0f0f0",
           width: "100%",
         }}
       >
-        {feedItems.map((item) => (
-          <FeedItem
-            key={item.id}
-            item={item}
-            onLike={handleLike}
-            onToggleDetails={handleToggleDetails}
-          />
-        ))}
-        {loading && <p style={{ textAlign: "center" }}>로딩 중...</p>}
+        {loading ? (
+          <div>로딩 중...</div>
+        ) : (
+          feedItems.map((item) => (
+            <FeedItem
+              key={item.id}
+              item={item}
+              onLike={handleLike}
+              onToggleDetails={handleToggleDetails}
+            />
+          ))
+        )}
       </div>
     </div>
   );
