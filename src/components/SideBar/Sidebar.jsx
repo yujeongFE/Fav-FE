@@ -1,14 +1,13 @@
 import React from "react";
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 
 const Sidebar = () => {
   const navigate = useNavigate();
-  const [activeNav, setActiveNav] = useState("");
-
-  const handleClickBoard = (path) => {
-    setActiveNav(path);
-    navigate("/board");
+  const location = useLocation();
+  
+  const handleClick = (path) => {
+    navigate(path);
   };
 
   return (
@@ -27,22 +26,22 @@ const Sidebar = () => {
           marginBottom: "40px",
         }}>
         <div>
-        <img
-          src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-BpDKq494k2vGEAtePMrbcfdRmb8N5d.png"
-          style={{
-            width: "32px",
-            height: "32px",
-            borderRadius: "50%",
-            objectFit: "cover",
-          }}
-        />
+          <img
+            src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-BpDKq494k2vGEAtePMrbcfdRmb8N5d.png"
+            style={{
+              width: "32px",
+              height: "32px",
+              borderRadius: "50%",
+              objectFit: "cover",
+            }}
+          />
         </div>
-        <span style={{ fontWeight: "bold", fontSize: "18px", position: "relative", top: "2px", }}>Fav</span>
+        <span style={{ fontWeight: "bold", fontSize: "18px", position: "relative", top: "2px" }}>Fav</span>
       </div>
 
       <nav>
         <button
-          onClick={() => setActiveNav("dashboard")}
+          onClick={() => handleClick("/dashboard")}
           style={{
             display: "flex",
             alignItems: "center",
@@ -51,7 +50,7 @@ const Sidebar = () => {
             marginBottom: "10px",
             border: "none",
             borderRadius: "4px",
-            backgroundColor: activeNav === "dashboard" ? "#f0f0f0" : "transparent",
+            backgroundColor: location.pathname === "/dashboard" ? "#f0f0f0" : "transparent",
             cursor: "pointer",
             textAlign: "left",
             fontSize: "14px",
@@ -59,7 +58,7 @@ const Sidebar = () => {
           <span style={{ marginRight: "10px", color: "black" }}>📊 대시보드</span>
         </button>
         <button
-          onClick={() => handleClickBoard("board")}
+          onClick={() => handleClick("/board")}
           style={{
             display: "flex",
             alignItems: "center",
@@ -68,7 +67,7 @@ const Sidebar = () => {
             marginBottom: "10px",
             border: "none",
             borderRadius: "4px",
-            backgroundColor: activeNav === "board" ? "#f0f0f0" : "transparent",
+            backgroundColor: location.pathname === "/board" ? "#f0f0f0" : "transparent",
             cursor: "pointer",
             textAlign: "left",
             fontSize: "14px",
@@ -76,7 +75,7 @@ const Sidebar = () => {
           <span style={{ marginRight: "10px", color: "black" }}>📋 게시판</span>
         </button>
         <button
-          onClick={() => handleClickBoard("storeInfo")}
+          onClick={() => handleClick("/storeInfo")}
           style={{
             display: "flex",
             alignItems: "center",
@@ -85,7 +84,7 @@ const Sidebar = () => {
             marginBottom: "10px",
             border: "none",
             borderRadius: "4px",
-            backgroundColor: activeNav === "storeInfo" ? "#f0f0f0" : "transparent",
+            backgroundColor: location.pathname === "/storeInfo" ? "#f0f0f0" : "transparent",
             cursor: "pointer",
             textAlign: "left",
             fontSize: "14px",
