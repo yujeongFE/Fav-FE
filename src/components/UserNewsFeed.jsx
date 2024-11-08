@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 
 // 가짜 API 호출 함수 (실제로 서버에서 데이터를 받아올 때 변경)
 const fetchPosts = async () => {
-  const response = await fetch("http://localhost:3000/api");
+  const response = await fetch("http://localhost:3000/posts");
   const data = await response.json();
   return data; // 받은 데이터를 그대로 반환
 };
@@ -111,7 +111,7 @@ export default function UserNewsFeed() {
     // 좋아요 상태를 서버에 반영하는 부분
     try {
       const item = feedItems.find((item) => item.id === id);
-      const response = await fetch(`http://localhost:3000/api`, {
+      const response = await fetch(`http://localhost:3000/posts`, {
         // URL 수정
         method: "PUT",
         headers: {
