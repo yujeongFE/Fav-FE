@@ -1,13 +1,34 @@
 import React from "react";
-import { useState } from "react";
+import Logo from "../Logo/Logo";
+import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 
 const Sidebar = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  
-  const handleClick = (path) => {
-    navigate(path);
+  const [activeNav, setActiveNav] = useState("");
+
+  useEffect(() => {
+    if (location.pathname === "/board") {
+      setActiveNav("board");
+    } else if (location.pathname === "/dashboard") {
+      setActiveNav("dashboard");
+    }
+  }, [location.pathname]);
+
+  const handleClickBoard = () => {
+    setActiveNav("board");
+    navigate("/board");
+  };
+
+  const handleClickDash = () => {
+    setActiveNav("dashboard");
+    navigate("/dashboard");
+  };
+
+  const handleClickStore = () => {
+    setActiveNav("storeInfo");
+    navigate("/storeInfo");
   };
 
   return (
@@ -25,23 +46,15 @@ const Sidebar = () => {
           alignItems: "center",
           marginBottom: "40px",
         }}>
-        <div>
-          <img
-            src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-BpDKq494k2vGEAtePMrbcfdRmb8N5d.png"
-            style={{
-              width: "32px",
-              height: "32px",
-              borderRadius: "50%",
-              objectFit: "cover",
-            }}
-          />
-        </div>
-        <span style={{ fontWeight: "bold", fontSize: "18px", position: "relative", top: "2px" }}>Fav</span>
+        <Logo />
+        <span style={{ fontWeight: "bold", fontSize: "18px", position: "relative", top: "2px" }}>
+          Fav
+        </span>
       </div>
 
       <nav>
         <button
-          onClick={() => handleClick("/dashboard")}
+          onClick={() => handleClickDash("dashboard")}
           style={{
             display: "flex",
             alignItems: "center",
@@ -75,7 +88,7 @@ const Sidebar = () => {
           <span style={{ marginRight: "10px", color: "black" }}>📋 게시판</span>
         </button>
         <button
-          onClick={() => handleClick("/storeInfo")}
+          onClick={() => handleClickStore()}
           style={{
             display: "flex",
             alignItems: "center",
@@ -84,7 +97,7 @@ const Sidebar = () => {
             marginBottom: "10px",
             border: "none",
             borderRadius: "4px",
-            backgroundColor: location.pathname === "/storeInfo" ? "#f0f0f0" : "transparent",
+            backgroundColor: activeNav === "storeInfo" ? "#f0f0f0" : "transparent",
             cursor: "pointer",
             textAlign: "left",
             fontSize: "14px",
