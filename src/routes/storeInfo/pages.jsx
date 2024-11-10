@@ -1,68 +1,82 @@
 import React, { useState, useEffect } from "react";
-import { Container, Row, Col, Card, Form, Button } from "react-bootstrap";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
+import { Container, Row, Col, Card, Form, Button } from "react-bootstrap";
 
-const StoreRegistration = () => {
+const StoreRegistration = ({ storeId }) => {
   const [storeName, setStoreName] = useState("");
   const [storeAddress, setStoreAddress] = useState("");
   const [storeDescription, setStoreDescription] = useState("");
   const [storeImage, setStoreImage] = useState(null);
   const [fileName, setFileName] = useState("");
-  const [isStoreRegistered, setIsStoreRegistered] = useState(false);
-  const bossId = "672cc71589f2134d84012164"; // 예시 boss_id
+  const [isEditing, setIsEditing] = useState(false);
+
+  const navigate = useNavigate(); // 네비게이트 훅 추가
+
+  // 상태 초기화 함수
+  const resetForm = () => {
+    setStoreName("");
+    setStoreAddress("");
+    setStoreDescription("");
+    setStoreImage(null);
+    setFileName("");
+    setIsEditing(false);
+  };
 
   useEffect(() => {
-    const fetchStoreInfo = async () => {
-      try {
-        const response = await axios.get(`http://localhost:3000/storeInfo/${bossId}`);
-        if (response.status === 200) {
+    const bossId = "672cc71589f2134d84012164";
+    axios
+      .get(`http://localhost:3000/storeInfo/${bossId}`)
+      .then((response) => {
+        if (response.data) {
           const { store_name, store_address, store_info, store_photo } = response.data;
           setStoreName(store_name);
           setStoreAddress(store_address);
           setStoreDescription(store_info);
-          setFileName(store_photo); // 등록된 사진 파일 이름 표시
-          setIsStoreRegistered(true); // 이미 등록된 가게 정보가 있음
+          setFileName(store_photo);
+          setIsEditing(true);
         }
-      } catch (error) {
-        if (error.response && error.response.status === 404) {
-          console.log("등록된 가게 정보가 없습니다.");
-        } else {
-          console.error("가게 정보를 가져오는 중 오류 발생:", error);
-        }
-      }
-    };
-
-    fetchStoreInfo();
-  }, [bossId]);
+      })
+      .catch((error) => console.error("Error fetching store data:", error));
+  }, [storeId]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    const bossId = "672cc71589f2134d84012164";
 
     const formData = new FormData();
     formData.append("store_name", storeName);
     formData.append("store_address", storeAddress);
     formData.append("store_info", storeDescription);
     if (storeImage) formData.append("store_photo", storeImage);
-    formData.append("boss_id", bossId);
 
     try {
-      const response = await axios.post("http://localhost:3000/storeInfo", formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      });
-      console.log("Store successfully registered:", response.data);
-      alert("가게가 성공적으로 등록되었습니다!");
-
-      setStoreName("");
-      setStoreAddress("");
-      setStoreDescription("");
-      setStoreImage(null);
-      setFileName("");
-      setIsStoreRegistered(true);
+      if (isEditing) {
+        await axios.put(`http://localhost:3000/storeInfo/${bossId}`, formData);
+        alert("가게 정보가 성공적으로 수정되었습니다!");
+      } else {
+        await axios.post(`http://localhost:3000/storeInfo/${bossId}`, formData);
+        alert("가게가 성공적으로 등록되었습니다!");
+      }
+      resetForm();
+      navigate("/dashboard"); // 성공 시 대시보드로 이동
     } catch (error) {
-      console.error("Error registering store:", error);
-      alert("가게 등록 중 오류가 발생했습니다.");
+      console.error("Error saving store:", error);
+      alert("가게 정보 저장 중 오류가 발생했습니다.");
+    }
+  };
+
+  const handleDelete = async () => {
+    if (window.confirm("정말로 가게 정보를 삭제하시겠습니까?")) {
+      try {
+        await axios.delete(`http://localhost:3000/storeInfo/${storeId}`);
+        alert("가게 정보가 성공적으로 삭제되었습니다!");
+        resetForm();
+        navigate("/dashboard"); // 삭제 후 대시보드로 이동
+      } catch (error) {
+        console.error("Error deleting store:", error);
+        alert("가게 삭제 중 오류가 발생했습니다.");
+      }
     }
   };
 
@@ -104,7 +118,7 @@ const StoreRegistration = () => {
                 </div>
                 <h2 className="mt-3 mb-1">안녕하세요, 사장님!</h2>
                 <p className="text-muted">
-                  {isStoreRegistered ? "등록된 가게 정보를 확인하세요" : "가게 정보를 입력해주세요"}
+                  {isEditing ? "가게 정보를 수정하세요" : "가게 정보를 입력해주세요"}
                 </p>
               </div>
 
@@ -177,10 +191,20 @@ const StoreRegistration = () => {
                 <Button
                   type="submit"
                   variant="primary"
-                  className="w-100 py-2"
+                  className="w-100 py-2 mb-2"
                   style={{ backgroundColor: "#4A90E2", borderColor: "#4A90E2" }}>
-                  {isStoreRegistered ? "가게 정보 수정하기" : "가게 등록하기"}
+                  {isEditing ? "가게 정보 수정하기" : "가게 등록하기"}
                 </Button>
+
+                {isEditing && (
+                  <Button
+                    type="button"
+                    variant="danger"
+                    className="w-100 py-2"
+                    onClick={handleDelete}>
+                    가게 삭제하기
+                  </Button>
+                )}
               </Form>
             </Card.Body>
           </Card>
