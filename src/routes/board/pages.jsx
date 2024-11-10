@@ -20,46 +20,39 @@ const Board = () => {
     setCurrentPost(null);
   };
 
-  useEffect(() => {
-    const fetchPosts = async () => {
-      try {
-        const response = await axios.get(`http://localhost:3000/posts`);
-        setPosts(response.data);
-      } catch (error) {
-        console.error("Error fetching posts:", error);
-      }
-    };
+  const fetchPosts = async () => {
+    try {
+      const response = await axios.get("http://localhost:3000/posts");
+      setPosts(response.data);
+    } catch (error) {
+      console.error("Error fetching posts:", error);
+    }
+  };
 
+  useEffect(() => {
     fetchPosts();
   }, []);
 
-  const handleEdit = async (id) => {
+  const handleEdit = (id) => {
     const postToEdit = posts.find((post) => post._id === id);
-    setCurrentPost(postToEdit); 
+    setCurrentPost(postToEdit);
     setWriting(true);
+  };
 
-    // 필요한 수정 데이터 예시
-    const updatedData = {
-      content: postToEdit.content,
-      is_open: postToEdit.is_open,
-      crowd_level: postToEdit.crowd_level,
-    };
-
-    try {
-      const response = await axios.put(`http://localhost:3000/posts/${id}`, updatedData);
-
-      // 수정된 포스트로 상태 업데이트
-      const updatedPost = response.data;
-      setPosts(posts.map((post) => (post._id === id ? updatedPost : post)));
-    } catch (error) {
-      console.error("Error updating post:", error);
+  const handlePostUpdated = (updatedPost) => {
+    if (updatedPost._id) {
+      setPosts((prevPosts) =>
+        prevPosts.map((post) => (post._id === updatedPost._id ? updatedPost : post))
+      );
+    } else {
+      setPosts((prevPosts) => [updatedPost, ...prevPosts]);
     }
   };
 
   const handleDelete = async (id) => {
     try {
       await axios.delete(`http://localhost:3000/posts/${id}`);
-      setPosts(posts.filter((post) => post._id !== id));
+      setPosts((prevPosts) => prevPosts.filter((post) => post._id !== id));
     } catch (error) {
       console.error("Error deleting post:", error);
     }
@@ -80,8 +73,7 @@ const Board = () => {
   };
 
   const MessageCard = ({ content, updated_at, status, postId, onEdit, onDelete }) => (
-    <div
-      className={`card mb-3 shadow-sm rounded-lg ${status === "busy" ? "border-danger" : "border-success"}`}>
+    <div className={`card mb-3 shadow-sm rounded-lg ${status === "busy" ? "border-danger" : "border-success"}`}>
       <div className="card-body">
         <div className="d-flex align-items-center">
           <img
@@ -113,14 +105,12 @@ const Board = () => {
     </div>
   );
 
-  const MainContent = ({ handleModalOpen }) => (
+  const MainContent = () => (
     <main className="flex-grow-1 p-4 white">
       <div className="d-flex justify-content-between align-items-center mb-4">
         <div>
           <h1 className="h2 fw-bold">메가커피 성수역점</h1>
-          <div className="mt-2">
-            <button className="btn btn-outline-primary me-2">사장님</button>
-          </div>
+          <button className="btn btn-outline-primary mt-2 me-2">사장님</button>
         </div>
         <button className="btn btn-primary" onClick={handleModalOpen}>
           <i className="bi bi-plus-circle me-2"></i> 글 추가하기
@@ -148,8 +138,13 @@ const Board = () => {
       <Sidebar writing={writing} />
       <div className="d-flex flex-column flex-grow-1 overflow-hidden">
         <Header />
-        <MainContent handleModalOpen={handleModalOpen} />
-        <PostModal writing={writing} onClose={handleModalClose} post={currentPost} />
+        <MainContent />
+        <PostModal
+          writing={writing}
+          onClose={handleModalClose}
+          post={currentPost}
+          onPostUpdated={handlePostUpdated}
+        />
       </div>
     </div>
   );
