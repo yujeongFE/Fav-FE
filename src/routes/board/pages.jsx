@@ -12,6 +12,7 @@ const Board = () => {
   const [posts, setPosts] = useState([]);
   const [currentPost, setCurrentPost] = useState(null);
   const [bossId, setBossId] = useState("");
+  const [store_Name, setStore_Name] = useState("");
 
   const getCookie = (cookieName) => {
     const cookies = document.cookie.split("; ");
@@ -44,6 +45,17 @@ const Board = () => {
   useEffect(() => {
     if (bossId) {
       fetchPosts(bossId);
+
+      const fetchStoreName = async () => {
+        try {
+          const response = await axios.get(`http://localhost:3000/storeInfo/${bossId}`);
+          setStore_Name(response.data.storeName);
+        } catch (error) {
+          console.error("Error fetching store name:", error);
+        }
+      };
+
+      fetchStoreName();
     }
   }, [bossId]);
 
@@ -146,7 +158,7 @@ const Board = () => {
     <main className="flex-grow-1 p-4 white">
       <div className="d-flex justify-content-between align-items-center mb-4">
         <div>
-          <h1 className="h2 fw-bold">메가커피 성수역점</h1>
+          <h1 className="h2 fw-bold">{store_Name}</h1>
           <button className="btn btn-outline-primary mt-2 me-2">사장님</button>
         </div>
         <button className="btn btn-primary" onClick={handleModalOpen}>
