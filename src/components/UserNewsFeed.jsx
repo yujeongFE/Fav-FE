@@ -44,11 +44,8 @@ const fetchFollowedPosts = async (userId) => {
 
 function FeedItem({ post, onLike }) {
   const content = post.content || "";
-  const storeName = post.boss_id ? post.boss_id.store_name : "Unknown Store";
-  const storePhoto =
-    post.boss_id && post.boss_id.store_photo
-      ? post.boss_id.store_photo
-      : "/placeholder.svg";
+  const storeName = post.store_name || "Unknown Store";
+  const storePhoto = post.photo || "/placeholder.svg";
 
   return (
     <div
@@ -355,8 +352,6 @@ function UserNewsFeed() {
           ))}
         </div>
       )}
-
-      {/* 디버그 정보 */}
     </div>
   );
 }
