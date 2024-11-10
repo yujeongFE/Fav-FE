@@ -38,8 +38,8 @@ export const PostModal = ({ writing, onClose, post, onPostUpdated }) => {
         response = await axios.post("http://localhost:3000/posts", postData);
       }
 
-      onPostUpdated(response.data);
-      onClose();
+      await onPostUpdated(response.data); // 수정된 부분: 상태 업데이트 대기
+      onClose(); // 모달 닫기
       setContent("");
       setCrowdLevel("");
       setIsEditing(false);
