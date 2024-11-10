@@ -1,11 +1,50 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
 
 export default function Login() {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [errorMessage, setErrorMessage] = useState('');
   const [isHovered, setIsHovered] = useState(false);
   const [loginHover, setLoginHover] = useState(false);
   const [signupHover, setSignupHover] = useState(false);
   const navigate = useNavigate();
+
+  // 유효성 검사 함수
+  const validateEmail = (email) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  };
+
+  const validatePassword = (password) => password.length >= 6;
+
+  const handleLogin = async (e) => {
+    e.preventDefault();
+
+    // 유효성 검사
+    if (!validateEmail(email)) {
+      setErrorMessage('유효한 이메일 주소를 입력해주세요.');
+      return;
+    }
+    if (!validatePassword(password)) {
+      setErrorMessage('비밀번호는 최소 6자 이상이어야 합니다.');
+      return;
+    }
+
+    try {
+      const response = await axios.post('http://localhost:3000/api/login', { email, password }, { withCredentials: true});
+      if (response.data.role) {
+        setErrorMessage('');
+        navigate(response.data.role === 'boss' ? '/dashboard' : '/userboard');
+      } else {
+        alert('일치하는 회원이 존재하지 않습니다.');
+      }
+    } catch (error) {
+      console.error('로그인 오류:', error);
+      setErrorMessage('로그인에 실패했습니다.');
+    }
+  };
 
   return (
     <div
@@ -18,6 +57,7 @@ export default function Login() {
         backgroundColor: '#FFECB3',
         padding: '16px',
         boxSizing: 'border-box',
+        overflow: 'hidden',
       }}
     >
       <div
@@ -99,10 +139,7 @@ export default function Login() {
           계정에 로그인하거나 새 계정을 만드세요
         </p>
 
-        <form
-          style={{ marginTop: '32px' }}
-          onSubmit={(e) => e.preventDefault()}
-        >
+        <form style={{ marginTop: '32px' }} onSubmit={handleLogin}>
           <div style={{ marginBottom: '16px' }}>
             <label htmlFor="email" style={{ display: 'none' }}>
               이메일 주소
@@ -110,9 +147,11 @@ export default function Login() {
             <input
               id="email"
               name="email"
-              type="text" // 이메일 입력 필드의 타입을 텍스트로 설정
+              type="text"
               required
               placeholder="이메일 주소"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
               style={{
                 width: '100%',
                 padding: '12px',
@@ -132,9 +171,11 @@ export default function Login() {
             <input
               id="password"
               name="password"
-              type="password" // 비밀번호 입력 필드는 항상 비밀번호 타입으로 설정
+              type="password"
               required
               placeholder="비밀번호"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
               style={{
                 width: '100%',
                 padding: '12px',
@@ -147,6 +188,9 @@ export default function Login() {
               }}
             />
           </div>
+          {errorMessage && (
+            <p style={{ color: 'red', fontSize: '14px' }}>{errorMessage}</p>
+          )}
 
           <button
             type="submit"
