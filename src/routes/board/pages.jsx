@@ -39,13 +39,13 @@ const Board = () => {
     setWriting(true);
   };
 
-  const handlePostUpdated = (updatedPost) => {
-    if (updatedPost._id) {
-      setPosts((prevPosts) =>
-        prevPosts.map((post) => (post._id === updatedPost._id ? updatedPost : post))
-      );
-    } else {
-      setPosts((prevPosts) => [updatedPost, ...prevPosts]);
+  const handlePostUpdated = async (updatedPost) => {
+    try {
+      // 글이 등록 또는 수정된 후 서버에서 최신 글 목록을 다시 가져옵니다.
+      const response = await axios.get("http://localhost:3000/posts");
+      setPosts(response.data);
+    } catch (error) {
+      console.error("Error fetching updated posts:", error);
     }
   };
 
@@ -73,7 +73,8 @@ const Board = () => {
   };
 
   const MessageCard = ({ content, updated_at, status, postId, onEdit, onDelete }) => (
-    <div className={`card mb-3 shadow-sm rounded-lg ${status === "busy" ? "border-danger" : "border-success"}`}>
+    <div
+      className={`card mb-3 shadow-sm rounded-lg ${status === "busy" ? "border-danger" : "border-success"}`}>
       <div className="card-body">
         <div className="d-flex align-items-center">
           <img
