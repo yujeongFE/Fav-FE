@@ -58,7 +58,7 @@ const Board = () => {
 
   const fetchPosts = async () => {
     try {
-      const response = await axios.get(`http://localhost:3000/posts/${bossId}`);
+      const response = await axios.get(`http://43.201.2.61:3000/posts/${bossId}`);
       setPosts(response.data);
     } catch (error) {
       console.error("Error fetching posts:", error);
@@ -74,7 +74,7 @@ const Board = () => {
   const handlePostUpdated = async (updatedPost) => {
     try {
       // 글이 등록 또는 수정된 후 서버에서 최신 글 목록을 다시 가져옵니다.
-      const response = await axios.get(`http://localhost:3000/posts/${bossId}`);
+      const response = await axios.get(`http://43.201.2.61:3000/posts/${bossId}`);
       setPosts(response.data);
     } catch (error) {
       console.error("Error fetching updated posts:", error);
@@ -83,7 +83,7 @@ const Board = () => {
 
   const handleDelete = async (id) => {
     try {
-      await axios.delete(`http://localhost:3000/posts/${id}`);
+      await axios.delete(`http://43.201.2.61:3000/posts/${id}`);
       setPosts((prevPosts) => prevPosts.filter((post) => post._id !== id));
     } catch (error) {
       console.error("Error deleting post:", error);

@@ -55,7 +55,7 @@ const StoreRegistration = () => {
   useEffect(() => {
     if (bossId) {
       axios
-        .get(`http://localhost:3000/storeInfo/${bossId}`)
+        .get(`http://43.201.2.61:3000/storeInfo/${bossId}`)
         .then((response) => {
           const { store_name, store_address, store_info, store_photo } =
             response.data || {};
@@ -79,10 +79,10 @@ const StoreRegistration = () => {
 
     try {
       if (isEditing) {
-        await axios.put(`http://localhost:3000/storeInfo/${bossId}`, formData);
+        await axios.put(`http://43.201.2.61:3000/storeInfo/${bossId}`, formData);
         alert("가게 정보가 성공적으로 수정되었습니다!");
       } else {
-        await axios.post(`http://localhost:3000/storeInfo/${bossId}`, formData);
+        await axios.post(`http://43.201.2.61:3000/storeInfo/${bossId}`, formData);
         alert("가게가 성공적으로 등록되었습니다!");
       }
       resetForm();
@@ -96,7 +96,7 @@ const StoreRegistration = () => {
   const handleDelete = async () => {
     if (window.confirm("정말로 가게 정보를 삭제하시겠습니까?")) {
       try {
-        await axios.delete(`http://localhost:3000/storeInfo/${bossId}`);
+        await axios.delete(`http://43.201.2.61:3000/storeInfo/${bossId}`);
         alert("가게 정보가 성공적으로 삭제되었습니다!");
         resetForm();
         navigate("/dashboard");

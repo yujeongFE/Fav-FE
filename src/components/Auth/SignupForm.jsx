@@ -97,7 +97,7 @@ export default function SignupForm() {
       try {
         const endpoint = userType === 'boss' ? '/boss/signup' : '/guest/signup';
 
-        await axios.post(`http://localhost:3000${endpoint}`, formData, { withCredentials: true});
+        await axios.post(`http://43.201.2.61:3000${endpoint}`, formData, { withCredentials: true});
         navigate('/');
 
       } catch (error) {
