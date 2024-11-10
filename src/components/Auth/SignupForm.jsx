@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
 
 export default function SignupForm() {
   const navigate = useNavigate();
@@ -12,12 +13,98 @@ export default function SignupForm() {
     nickname: '',
     address: '',
     name: '',
-    birthdate: '',
+  });
+  const [errorMessage, setErrorMessage] = useState({
+    email: '',
+    password: '',
+    name: '',
+    nickname: '',
+    address: '',
   });
 
-  const handleSubmit = (e) => {
+  // 유효성 검사 함수
+  const validateEmail = () => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(formData.email)) {
+      setErrorMessage((prev) => ({ ...prev, email: '올바른 이메일 형식이 아닙니다.' }));
+      return false;
+    }
+    setErrorMessage((prev) => ({ ...prev, email: '' }));
+    return true;
+  };
+
+  const validatePassword = () => {
+    if (formData.password.length < 6) {
+      setErrorMessage((prev) => ({ ...prev, password: '비밀번호는 최소 6자 이상이어야 합니다.' }));
+      return false;
+    } else if (formData.password !== formData.passwordConfirm) {
+      setErrorMessage((prev) => ({ ...prev, password: '비밀번호가 일치하지 않습니다.' }));
+      return false;
+    }
+    setErrorMessage((prev) => ({ ...prev, password: '' }));
+    return true;
+  };
+
+  const validateUserTypeFields = () => {
+    let isValid = true;
+    if (userType === 'boss') {
+      if (!formData.name) {
+        setErrorMessage((prev) => ({ ...prev, name: '이름을 입력해주세요.' }));
+        isValid = false;
+      } else {
+        setErrorMessage((prev) => ({ ...prev, name: '' }));
+      }
+      if (!formData.address) {
+        setErrorMessage((prev) => ({ ...prev, address: '주소를 입력해주세요.' }));
+        isValid = false;
+      } else {
+        setErrorMessage((prev) => ({ ...prev, address: '' }));
+      }
+    } else if (userType === 'guest') {
+      if (!formData.name) {
+        setErrorMessage((prev) => ({ ...prev, name: '이름을 입력해주세요.' }));
+        isValid = false;
+      } else {
+        setErrorMessage((prev) => ({ ...prev, name: '' }));
+      }
+      if (!formData.nickname) {
+        setErrorMessage((prev) => ({ ...prev, nickname: '닉네임을 입력해주세요.' }));
+        isValid = false;
+      } else {
+        setErrorMessage((prev) => ({ ...prev, nickname: '' }));
+      }
+    }
+    return isValid;
+  };
+
+  const handleUserTypeChange = (type) => {
+    setUserType(type);
+    setFormData({
+      email: '',
+      password: '',
+      passwordConfirm: '',
+      nickname: '',
+      address: '',
+      name: '',
+    }); // 모든 필드를 초기화
+    setErrorMessage({ email: '', password: '', name: '', nickname: '', address: '' });
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log(formData);
+
+    if (validateEmail() && validatePassword() && validateUserTypeFields()) {
+      try {
+        const endpoint = userType === 'boss' ? '/boss/signup' : '/guest/signup';
+
+        await axios.post(`http://localhost:3000${endpoint}`, formData, { withCredentials: true});
+        navigate('/');
+
+      } catch (error) {
+        console.log('회원가입 오류: ', error);
+        setErrorMessage((prev) => ({ ...prev, genereal: '회원가입에 실패했습니다. 다시 시도해주세요.'}));
+      }
+    }
   };
 
   const handleChange = (e) => {
@@ -135,22 +222,20 @@ export default function SignupForm() {
               <div style={styles.buttonGroup}>
                 <button
                   type="button"
-                  onClick={() => setUserType('owner')}
+                  onClick={() => handleUserTypeChange('boss')}
                   style={{
                     ...styles.selectButton,
-                    ...(userType === 'owner' ? styles.selectButtonActive : {}),
+                    ...(userType === 'boss' ? styles.selectButtonActive : {}),
                   }}
                 >
                   사장님
                 </button>
                 <button
                   type="button"
-                  onClick={() => setUserType('customer')}
+                  onClick={() => handleUserTypeChange('guest')}
                   style={{
                     ...styles.selectButton,
-                    ...(userType === 'customer'
-                      ? styles.selectButtonActive
-                      : {}),
+                    ...(userType === 'guest' ? styles.selectButtonActive : {}),
                   }}
                 >
                   고객
@@ -169,9 +254,11 @@ export default function SignupForm() {
                 placeholder="이메일을 입력해주세요"
                 value={formData.email}
                 onChange={handleChange}
+                onBlur={validateEmail}
                 required
                 style={styles.input}
               />
+              {errorMessage.email && <p style={{ color: 'red', fontSize: '12px' }}>{errorMessage.email}</p>}
             </div>
 
             <div style={styles.formGroup}>
@@ -185,9 +272,11 @@ export default function SignupForm() {
                 placeholder="비밀번호를 입력해주세요"
                 value={formData.password}
                 onChange={handleChange}
+                onBlur={validatePassword}
                 required
                 style={styles.input}
               />
+              {errorMessage.password && <p style={{ color: 'red', fontSize: '12px' }}>{errorMessage.password}</p>}
             </div>
 
             <div style={styles.formGroup}>
@@ -201,12 +290,13 @@ export default function SignupForm() {
                 placeholder="비밀번호를 입력해주세요"
                 value={formData.passwordConfirm}
                 onChange={handleChange}
+                onBlur={validatePassword}
                 required
                 style={styles.input}
               />
             </div>
 
-            {userType === 'customer' && (
+            {userType === 'guest' && (
               <div style={styles.formGroup}>
                 <label htmlFor="nickname" style={styles.label}>
                   닉네임
@@ -221,10 +311,11 @@ export default function SignupForm() {
                   required
                   style={styles.input}
                 />
+                {errorMessage.nickname && <p style={{ color: 'red', fontSize: '12px' }}>{errorMessage.nickname}</p>}
               </div>
             )}
 
-            {userType === 'owner' && (
+            {userType === 'boss' && (
               <div style={styles.formGroup}>
                 <label htmlFor="address" style={styles.label}>
                   주소
@@ -239,6 +330,7 @@ export default function SignupForm() {
                   required
                   style={styles.input}
                 />
+                {errorMessage.address && <p style={{ color: 'red', fontSize: '12px' }}>{errorMessage.address}</p>}
               </div>
             )}
 
@@ -256,29 +348,13 @@ export default function SignupForm() {
                 required
                 style={styles.input}
               />
-            </div>
-
-            <div style={styles.formGroup}>
-              <label htmlFor="birthdate" style={styles.label}>
-                생년월일
-              </label>
-              <input
-                id="birthdate"
-                name="birthdate"
-                type="text"
-                placeholder="생년월일 8자리"
-                value={formData.birthdate}
-                onChange={handleChange}
-                required
-                style={styles.input}
-              />
+              {errorMessage.name && <p style={{ color: 'red', fontSize: '12px' }}>{errorMessage.name}</p>}
             </div>
 
             <button
               type="submit"
               onMouseEnter={() => setIsHovered(true)}
               onMouseLeave={() => setIsHovered(false)}
-              onClick={() => navigate('/dashboard')}
               style={styles.submitButton}
             >
               등록하기
