@@ -1,10 +1,21 @@
 import React, { useState, useEffect } from "react";
+import Cookies from "js-cookie";
 
-// 가짜 API 호출 함수 (실제 서버 데이터로 교체 가능)
-const fetchPosts = async () => {
-  const response = await fetch("http://localhost:3000/posts");
-  const data = await response.json();
-  return data;
+// 팔로우한 사람들의 게시물만 가져오는 함수
+const fetchFollowedPosts = async (userId) => {
+  try {
+    const response = await fetch(
+      `http://localhost:3000/posts/followed?userId=${userId}`
+    );
+    if (!response.ok) {
+      throw new Error("Failed to fetch posts");
+    }
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error("Error fetching followed posts:", error);
+    return [];
+  }
 };
 
 function HeartIcon({ filled }) {
@@ -33,6 +44,7 @@ function FeedItem({ item, onLike, onFollow }) {
       style={{
         border: "1px solid #e0e0e0",
         borderRadius: "20px",
+        width: "100%",
         padding: "16px",
         marginBottom: "10px",
         backgroundColor: "white",
@@ -88,12 +100,18 @@ export default function UserNewsFeed() {
   const [loading, setLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState([]);
+  const [userId, setUserId] = useState(null);
 
   useEffect(() => {
-    setLoading(true);
+    const userIdFromCookie = Cookies.get("userId");
+    setUserId(userIdFromCookie || "Guest");
+
     const loadPosts = async () => {
-      const data = await fetchPosts();
-      setFeedItems(data);
+      setLoading(true);
+      if (userIdFromCookie) {
+        const data = await fetchFollowedPosts(userIdFromCookie);
+        setFeedItems(data);
+      }
       setLoading(false);
     };
 
@@ -108,12 +126,41 @@ export default function UserNewsFeed() {
     );
   };
 
-  const handleFollow = (id) => {
-    setFeedItems((prev) =>
-      prev.map((item) =>
-        item.id === id ? { ...item, followed: !item.followed } : item
-      )
-    );
+  const sendFollowRequest = async (storeId) => {
+    try {
+      const response = await fetch("http://localhost:3000/follow", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ userId, storeId }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Follow request failed");
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error("Error sending follow request:", error);
+      throw error;
+    }
+  };
+
+  const handleFollow = async (id) => {
+    try {
+      await sendFollowRequest(id);
+      setSearchResults((prev) =>
+        prev.map((item) =>
+          item.id === id ? { ...item, followed: !item.followed } : item
+        )
+      );
+      // 팔로우 후 피드 새로고침
+      const updatedFeed = await fetchFollowedPosts(userId);
+      setFeedItems(updatedFeed);
+    } catch (error) {
+      console.error("Failed to follow store:", error);
+    }
   };
 
   const handleSearchChange = async (e) => {
@@ -139,22 +186,21 @@ export default function UserNewsFeed() {
       style={{
         display: "flex",
         flexDirection: "column",
-        width: "100%",
-        maxWidth: "400px",
+        alignItems: "center",
+        justifyContent: "center",
+        width: "40vh",
         margin: "0 auto",
         height: "100vh",
         fontFamily: "Arial, sans-serif",
-        justifyContent: "center",
-        alignItems: "center",
         backgroundColor: "#f0f0f0",
       }}
     >
       <div
         style={{
           display: "flex",
-          justifyContent: "center",
-          padding: "16px",
-          backgroundColor: "#f0f0f0",
+          flexDirection: "column",
+          alignItems: "center",
+          marginBottom: "16px",
         }}
       >
         <img
@@ -167,10 +213,19 @@ export default function UserNewsFeed() {
             objectFit: "cover",
           }}
         />
+
+        <span
+          style={{ fontSize: "16px", fontWeight: "bold", marginTop: "8px" }}
+        >
+          안녕하세요 {userId} 님!
+        </span>
       </div>
 
       <div
         style={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
           width: "100%",
           backgroundColor: "white",
           borderRadius: "24px",
@@ -232,7 +287,7 @@ export default function UserNewsFeed() {
                     }}
                   >
                     <img
-                      src={item.image} // item 객체에 가게 이미지를 포함했다고 가정
+                      src={item.image}
                       alt={`${item.store_name} 이미지`}
                       style={{
                         width: "40px",
@@ -250,40 +305,39 @@ export default function UserNewsFeed() {
                     }}
                     style={{
                       background: "none",
-                      border: "1px solid #ccc",
-                      borderRadius: "8px",
-                      padding: "4px 8px",
+                      border: "none",
+                      color: "#1a73e8",
                       cursor: "pointer",
-                      color: item.followed ? "blue" : "#666",
+                      fontSize: "12px",
                     }}
                   >
-                    {item.followed ? "팔로잉" : "팔로우"}
+                    {item.followed ? "팔로우 취소" : "팔로우"}
                   </button>
                 </div>
               ))
             ) : (
-              <div style={{ padding: "8px", color: "#999" }}>
-                검색 결과가 없습니다.
+              <div style={{ padding: "8px", textAlign: "center" }}>
+                검색 결과 없음
               </div>
             )}
           </div>
         )}
       </div>
 
-      <div style={{ flex: 1, overflowY: "auto", width: "100%" }}>
-        {loading ? (
-          <div>로딩 중...</div>
-        ) : (
-          feedItems.map((item) => (
+      {loading ? (
+        <p>Loading...</p>
+      ) : (
+        <div style={{ width: "100%" }}>
+          {feedItems.map((item) => (
             <FeedItem
               key={item.id}
               item={item}
               onLike={handleLike}
               onFollow={handleFollow}
             />
-          ))
-        )}
-      </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
