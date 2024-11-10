@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from "react";
 import { Line } from "react-chartjs-2";
 import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend } from 'chart.js';
+import {jwtDecode} from "jwt-decode"
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend);
 
 const MainContent = () => {
   const [userName, setUserName] = useState("");
   const [dashboardData, setDashboardData] = useState(null);
+  const [bossId, setBossId] = useState(null);
   const todayDate = new Date().toLocaleDateString();
 
   const times = [
@@ -20,9 +22,37 @@ const MainContent = () => {
   const [visitorData, setVisitorData] = useState(Array(times.length).fill(0));
   const [salesData, setSalesData] = useState(Array(times.length).fill(0));
 
-  const bossId = "672cc71589f2134d84012164";
+  const getCookie = (cookieName) => {
+    const cookies = document.cookie.split('; ');
+    for (let cookie of cookies) {
+      const [name, value] = cookie.split('=');
+      if (name === cookieName) return value;
+    }
+    return null;
+  };
+
+  const jwtToken = getCookie('authToken');
 
   useEffect(() => {
+    if (jwtToken) {
+      try {
+        const decoded = jwtDecode(jwtToken);
+        console.log(decoded);
+        
+        const bossId = decoded._id;
+        setBossId(bossId);
+
+        console.log(`User ID: ${decoded._id}`);
+      } catch (error) {
+        console.error("Invalid JWT Token:", error);
+      }
+    } else {
+      console.log("JWT token not found in cookies");
+    }
+  }, [jwtToken]);
+
+  useEffect(() => {
+    if (bossId) {
     fetch(`http://localhost:3000/dashboard/${bossId}`)
       .then(response => response.json())
       .then(data => {
@@ -32,7 +62,8 @@ const MainContent = () => {
         console.log(userName);
       })
       .catch(error => console.error("대시보드 데이터를 가져오는데 실패했습니다.", error));
-  }, []);
+    }
+  }, [bossId]);
 
   const incrementData = (data, index, increment) => {
     const newData = [...data];
@@ -47,7 +78,7 @@ const MainContent = () => {
 
     const updateVisitorCount = setInterval(() => {
       setVisitorData(prevData => incrementData(prevData, new Date().getHours(), 1));
-    }, Math.random() * 10000 + 5000);  // Random interval between 5-15 seconds
+    }, Math.random() * 5000 + 5000);
 
     const updateSalesAmount = setInterval(() => {
       setSalesData(prevData => incrementData(prevData, new Date().getHours(), 10000));
