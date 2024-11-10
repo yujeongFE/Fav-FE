@@ -3,17 +3,20 @@ import axios from "axios";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap-icons/font/bootstrap-icons.css";
 
-export const PostModal = ({ writing, onClose, post }) => {
+export const PostModal = ({ writing, onClose, post, onPostUpdated }) => {
   const [content, setContent] = useState("");
   const [crowdLevel, setCrowdLevel] = useState("");
-  const [isEditing, setIsEditing] = useState(false); // 수정 중 상태 추가
+  const [isEditing, setIsEditing] = useState(false);
 
-  // 수정 모드일 경우 기존 데이터 로드
   useEffect(() => {
     if (post) {
       setContent(post.content);
       setCrowdLevel(post.crowd_level);
-      setIsEditing(true); // 수정 모드 활성화
+      setIsEditing(true);
+    } else {
+      setContent("");
+      setCrowdLevel("");
+      setIsEditing(false);
     }
   }, [post]);
 
@@ -28,23 +31,18 @@ export const PostModal = ({ writing, onClose, post }) => {
     };
 
     try {
+      let response;
       if (isEditing && post) {
-        // 수정할 때는 PUT 요청
-        const response = await axios.put(
-          `http://localhost:3000/posts/${post._id}`, // 게시물 ID를 URL에 추가하여 PUT 요청
-          postData
-        );
-        console.log("Post updated:", response.data);
+        response = await axios.put(`http://localhost:3000/posts/${post._id}`, postData);
       } else {
-        // 새로운 게시물일 경우 POST 요청
-        const response = await axios.post("http://localhost:3000/posts", postData);
-        console.log("Post created:", response.data);
+        response = await axios.post("http://localhost:3000/posts", postData);
       }
 
+      await onPostUpdated(response.data); // 수정된 부분: 상태 업데이트 대기
       onClose(); // 모달 닫기
-      setContent(""); // 내용 초기화
-      setCrowdLevel(""); // 혼잡도 초기화
-      setIsEditing(false); // 수정 모드 초기화
+      setContent("");
+      setCrowdLevel("");
+      setIsEditing(false);
     } catch (error) {
       console.error("Error posting data:", error.response || error.message);
     }
@@ -75,17 +73,23 @@ export const PostModal = ({ writing, onClose, post }) => {
               <p className="mb-2">혼잡도</p>
               <div className="d-flex gap-2">
                 <button
-                  className="btn btn-danger flex-grow-1"
+                  className={`btn flex-grow-1 ${
+                    crowdLevel === "HIGH" ? "btn-danger active" : "btn-outline-danger"
+                  }`}
                   onClick={() => setCrowdLevel("HIGH")}>
                   바빠요
                 </button>
                 <button
-                  className="btn btn-warning flex-grow-1"
+                  className={`btn flex-grow-1 ${
+                    crowdLevel === "MEDIUM" ? "btn-warning active" : "btn-outline-warning"
+                  }`}
                   onClick={() => setCrowdLevel("MEDIUM")}>
                   보통이에요
                 </button>
                 <button
-                  className="btn btn-success flex-grow-1"
+                  className={`btn flex-grow-1 ${
+                    crowdLevel === "LOW" ? "btn-success active" : "btn-outline-success"
+                  }`}
                   onClick={() => setCrowdLevel("LOW")}>
                   여유로워요
                 </button>

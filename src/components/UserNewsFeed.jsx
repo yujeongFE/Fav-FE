@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from "react";
 
-// 가짜 API 호출 함수 (실제로 서버에서 데이터를 받아올 때 변경)
+// 가짜 API 호출 함수 (실제 서버 데이터로 교체 가능)
 const fetchPosts = async () => {
-  const response = await fetch("http://localhost:3000/api");
+  const response = await fetch("http://localhost:3000/posts");
   const data = await response.json();
-  return data; // 받은 데이터를 그대로 반환
+  return data;
 };
 
 function HeartIcon({ filled }) {
@@ -25,8 +25,8 @@ function HeartIcon({ filled }) {
   );
 }
 
-function FeedItem({ item, onLike }) {
-  const content = item.content || ""; // 본문 내용
+function FeedItem({ item, onLike, onFollow }) {
+  const content = item.content || "";
 
   return (
     <div
@@ -60,22 +60,24 @@ function FeedItem({ item, onLike }) {
               </span>
             </div>
             <p style={{ margin: "8px 0 0", fontSize: "14px", color: "#333" }}>
-              {content} {/* 전체 본문을 표시 */}
+              {content}
             </p>
           </div>
         </div>
-        <button
-          onClick={() => onLike(item.id)}
-          style={{
-            background: "none",
-            border: "none",
-            cursor: "pointer",
-            color: item.liked ? "red" : "#666",
-          }}
-          aria-label={item.liked ? "좋아요 취소" : "좋아요"}
-        >
-          <HeartIcon filled={item.liked} />
-        </button>
+        <div>
+          <button
+            onClick={() => onLike(item.id)}
+            style={{
+              background: "none",
+              border: "none",
+              cursor: "pointer",
+              color: item.liked ? "red" : "#666",
+            }}
+            aria-label={item.liked ? "좋아요 취소" : "좋아요"}
+          >
+            <HeartIcon filled={item.liked} />
+          </button>
+        </div>
       </div>
     </div>
   );
@@ -84,68 +86,51 @@ function FeedItem({ item, onLike }) {
 export default function UserNewsFeed() {
   const [feedItems, setFeedItems] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [searchExpanded, setSearchExpanded] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState([]);
-  const [heartLiked, setHeartLiked] = useState(false);
 
-  // 데이터 로딩 (fetch 요청)
   useEffect(() => {
     setLoading(true);
     const loadPosts = async () => {
       const data = await fetchPosts();
-      setFeedItems(data); // 받아온 데이터를 상태에 설정
+      setFeedItems(data);
       setLoading(false);
     };
 
     loadPosts();
   }, []);
 
-  const handleLike = async (id) => {
+  const handleLike = (id) => {
     setFeedItems((prev) =>
       prev.map((item) =>
         item.id === id ? { ...item, liked: !item.liked } : item
       )
     );
-
-    // 좋아요 상태를 서버에 반영하는 부분
-    try {
-      const item = feedItems.find((item) => item.id === id);
-      const response = await fetch(`http://localhost:3000/api`, {
-        // URL 수정
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ liked: !item.liked }), // 필요시 liked만 보냄
-      });
-
-      if (!response.ok) {
-        throw new Error("서버와의 통신에 실패했습니다.");
-      }
-    } catch (error) {
-      console.error("좋아요 상태를 변경하는 중 오류가 발생했습니다:", error);
-    }
   };
 
-  const handleToggleDetails = (id) => {
+  const handleFollow = (id) => {
     setFeedItems((prev) =>
       prev.map((item) =>
-        item.id === id ? { ...item, showDetails: !item.showDetails } : item
+        item.id === id ? { ...item, followed: !item.followed } : item
       )
     );
   };
 
-  const handleSearchChange = (e) => {
+  const handleSearchChange = async (e) => {
     const query = e.target.value;
     setSearchQuery(query);
     if (query.trim() === "") {
       setSearchResults([]);
     } else {
-      const filteredResults = feedItems.filter((item) =>
-        item.title.toLowerCase().includes(query.toLowerCase())
-      );
-      setSearchResults(filteredResults);
+      try {
+        const response = await fetch(
+          `http://localhost:3000/storeinfo/search?q=${query}`
+        );
+        const results = await response.json();
+        setSearchResults(results);
+      } catch (error) {
+        console.error("검색 중 오류가 발생했습니다.", error);
+      }
     }
   };
 
@@ -164,7 +149,6 @@ export default function UserNewsFeed() {
         backgroundColor: "#f0f0f0",
       }}
     >
-      {/* App Icon */}
       <div
         style={{
           display: "flex",
@@ -185,7 +169,6 @@ export default function UserNewsFeed() {
         />
       </div>
 
-      {/* Search Bar */}
       <div
         style={{
           width: "100%",
@@ -201,7 +184,6 @@ export default function UserNewsFeed() {
           placeholder="검색..."
           value={searchQuery}
           onChange={handleSearchChange}
-          onFocus={() => setSearchExpanded(true)}
           style={{
             width: "100%",
             padding: "8px 16px",
@@ -213,7 +195,7 @@ export default function UserNewsFeed() {
             color: "black",
           }}
         />
-        {searchExpanded && searchQuery && (
+        {searchQuery && (
           <div
             style={{
               position: "absolute",
@@ -236,14 +218,47 @@ export default function UserNewsFeed() {
                   style={{
                     padding: "8px",
                     borderBottom: "1px solid #eee",
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
                     cursor: "pointer",
                   }}
-                  onClick={() => {
-                    setSearchExpanded(false);
-                    setSearchQuery(item.title);
-                  }}
                 >
-                  {item.title}
+                  <div
+                    style={{
+                      display: "flex",
+                      gap: "12px",
+                      alignItems: "center",
+                    }}
+                  >
+                    <img
+                      src={item.image} // item 객체에 가게 이미지를 포함했다고 가정
+                      alt={`${item.store_name} 이미지`}
+                      style={{
+                        width: "40px",
+                        height: "40px",
+                        borderRadius: "50%",
+                        objectFit: "cover",
+                      }}
+                    />
+                    <span>{item.store_name}</span>
+                  </div>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleFollow(item.id);
+                    }}
+                    style={{
+                      background: "none",
+                      border: "1px solid #ccc",
+                      borderRadius: "8px",
+                      padding: "4px 8px",
+                      cursor: "pointer",
+                      color: item.followed ? "blue" : "#666",
+                    }}
+                  >
+                    {item.followed ? "팔로잉" : "팔로우"}
+                  </button>
                 </div>
               ))
             ) : (
@@ -255,14 +270,7 @@ export default function UserNewsFeed() {
         )}
       </div>
 
-      {/* Feed Container */}
-      <div
-        style={{
-          flex: 1,
-          overflowY: "auto",
-          width: "100%",
-        }}
-      >
+      <div style={{ flex: 1, overflowY: "auto", width: "100%" }}>
         {loading ? (
           <div>로딩 중...</div>
         ) : (
@@ -271,7 +279,7 @@ export default function UserNewsFeed() {
               key={item.id}
               item={item}
               onLike={handleLike}
-              onToggleDetails={handleToggleDetails}
+              onFollow={handleFollow}
             />
           ))
         )}
