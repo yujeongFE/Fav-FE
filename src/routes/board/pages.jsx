@@ -89,10 +89,14 @@ const Board = () => {
             <small className="text-muted">{formatDate(updated_at)}</small>
           </div>
           {status && (
-            <span className={`badge ${status === "busy" ? "bg-danger" : "bg-success"}`}>
-              {status === "busy" ? "혼잡해요" : "여유로워요"}
+            <span
+              className={`badge ${
+                status === "HIGH" ? "bg-danger" : status === "MEDIUM" ? "bg-warning" : "bg-success"
+              }`}>
+              {status === "HIGH" ? "혼잡해요" : status === "MEDIUM" ? "보통이에요" : "여유로워요"}
             </span>
           )}
+
           <div className="ms-3">
             <button className="btn btn-sm btn-outline-warning" onClick={() => onEdit(postId)}>
               <i className="bi bi-pencil"></i> 수정
