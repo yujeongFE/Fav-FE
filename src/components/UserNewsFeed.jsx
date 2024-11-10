@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import Cookies from "js-cookie"; // js-cookie를 추가하여 쿠키를 쉽게 관리합니다.
 
 // 가짜 API 호출 함수 (실제 서버 데이터로 교체 가능)
 const fetchPosts = async () => {
@@ -33,6 +34,7 @@ function FeedItem({ item, onLike, onFollow }) {
       style={{
         border: "1px solid #e0e0e0",
         borderRadius: "20px",
+        width: "100%",
         padding: "16px",
         marginBottom: "10px",
         backgroundColor: "white",
@@ -88,8 +90,13 @@ export default function UserNewsFeed() {
   const [loading, setLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState([]);
+  const [userId, setUserId] = useState(null); // 유저 아이디 상태 추가
 
   useEffect(() => {
+    // 쿠키에서 유저 아이디를 읽어옴
+    const userIdFromCookie = Cookies.get("userId");
+    setUserId(userIdFromCookie || "Guest"); // 유저 아이디가 없으면 "Guest"로 설정
+
     setLoading(true);
     const loadPosts = async () => {
       const data = await fetchPosts();
@@ -138,25 +145,25 @@ export default function UserNewsFeed() {
     <div
       style={{
         display: "flex",
-        flexDirection: "column",
-        width: "100%",
-        maxWidth: "400px",
+        flexDirection: "column", // 세로로 배치
+        alignItems: "center", // 가운데 정렬
+        justifyContent: "center",
+        width: "40vh",
         margin: "0 auto",
         height: "100vh",
         fontFamily: "Arial, sans-serif",
-        justifyContent: "center",
-        alignItems: "center",
         backgroundColor: "#f0f0f0",
       }}
     >
       <div
         style={{
           display: "flex",
-          justifyContent: "center",
-          padding: "16px",
-          backgroundColor: "#f0f0f0",
+          flexDirection: "column", // 세로로 배치
+          alignItems: "center",
+          marginBottom: "16px",
         }}
       >
+        {/* 로고 부분 */}
         <img
           src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-BpDKq494k2vGEAtePMrbcfdRmb8N5d.png"
           alt="커피 컵 로고"
@@ -167,10 +174,21 @@ export default function UserNewsFeed() {
             objectFit: "cover",
           }}
         />
+
+        {/* 유저 인사 문구 */}
+        <span
+          style={{ fontSize: "16px", fontWeight: "bold", marginTop: "8px" }}
+        >
+          안녕하세요 {userId} 님!
+        </span>
       </div>
 
+      {/* 검색창 부분 */}
       <div
         style={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
           width: "100%",
           backgroundColor: "white",
           borderRadius: "24px",
@@ -250,40 +268,39 @@ export default function UserNewsFeed() {
                     }}
                     style={{
                       background: "none",
-                      border: "1px solid #ccc",
-                      borderRadius: "8px",
-                      padding: "4px 8px",
+                      border: "none",
+                      color: "#1a73e8",
                       cursor: "pointer",
-                      color: item.followed ? "blue" : "#666",
+                      fontSize: "12px",
                     }}
                   >
-                    {item.followed ? "팔로잉" : "팔로우"}
+                    {item.followed ? "팔로우 취소" : "팔로우"}
                   </button>
                 </div>
               ))
             ) : (
-              <div style={{ padding: "8px", color: "#999" }}>
-                검색 결과가 없습니다.
+              <div style={{ padding: "8px", textAlign: "center" }}>
+                검색 결과 없음
               </div>
             )}
           </div>
         )}
       </div>
 
-      <div style={{ flex: 1, overflowY: "auto", width: "100%" }}>
-        {loading ? (
-          <div>로딩 중...</div>
-        ) : (
-          feedItems.map((item) => (
+      {loading ? (
+        <p>Loading...</p>
+      ) : (
+        <div style={{ width: "100%" }}>
+          {feedItems.map((item) => (
             <FeedItem
               key={item.id}
               item={item}
               onLike={handleLike}
               onFollow={handleFollow}
             />
-          ))
-        )}
-      </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
