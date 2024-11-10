@@ -1,19 +1,48 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import { jwtDecode } from "jwt-decode";
 import { Container, Row, Col, Card, Form, Button } from "react-bootstrap";
 
-const StoreRegistration = ({ storeId }) => {
+const StoreRegistration = () => {
   const [storeName, setStoreName] = useState("");
   const [storeAddress, setStoreAddress] = useState("");
   const [storeDescription, setStoreDescription] = useState("");
   const [storeImage, setStoreImage] = useState(null);
   const [fileName, setFileName] = useState("");
   const [isEditing, setIsEditing] = useState(false);
+  const [bossId, setBossId] = useState("");
+  const navigate = useNavigate();
 
-  const navigate = useNavigate(); // 네비게이트 훅 추가
+  const getCookie = (cookieName) => {
+    const cookies = document.cookie.split("; ");
+    for (let cookie of cookies) {
+      const [name, value] = cookie.split("=");
+      if (name === cookieName) return value;
+    }
+    return null;
+  };
 
-  // 상태 초기화 함수
+  const jwtToken = getCookie("authToken");
+
+  useEffect(() => {
+    if (jwtToken) {
+      try {
+        const decoded = jwtDecode(jwtToken);
+        console.log(decoded);
+
+        const bossId = decoded._id;
+        setBossId(bossId);
+
+        console.log(`User ID: ${decoded._id}`);
+      } catch (error) {
+        console.error("Invalid JWT Token:", error);
+      }
+    } else {
+      console.log("JWT token not found in cookies");
+    }
+  }, []);
+
   const resetForm = () => {
     setStoreName("");
     setStoreAddress("");
@@ -24,26 +53,23 @@ const StoreRegistration = ({ storeId }) => {
   };
 
   useEffect(() => {
-    const bossId = "672cc71589f2134d84012164";
-    axios
-      .get(`http://localhost:3000/storeInfo/${bossId}`)
-      .then((response) => {
-        if (response.data) {
-          const { store_name, store_address, store_info, store_photo } = response.data;
-          setStoreName(store_name);
-          setStoreAddress(store_address);
-          setStoreDescription(store_info);
-          setFileName(store_photo);
-          setIsEditing(true);
-        }
-      })
-      .catch((error) => console.error("Error fetching store data:", error));
-  }, [storeId]);
+    if (bossId) {
+      axios
+        .get(`http://localhost:3000/storeInfo/${bossId}`)
+        .then((response) => {
+          const { store_name, store_address, store_info, store_photo } = response.data || {};
+          setStoreName(store_name || "");
+          setStoreAddress(store_address || "");
+          setStoreDescription(store_info || "");
+          setFileName(store_photo || "");
+          setIsEditing(!!response.data);
+        })
+        .catch((error) => console.error("Error fetching store data:", error));
+    }
+  }, [bossId]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const bossId = "672cc71589f2134d84012164";
-
     const formData = new FormData();
     formData.append("store_name", storeName);
     formData.append("store_address", storeAddress);
@@ -59,7 +85,7 @@ const StoreRegistration = ({ storeId }) => {
         alert("가게가 성공적으로 등록되었습니다!");
       }
       resetForm();
-      navigate("/dashboard"); // 성공 시 대시보드로 이동
+      navigate("/dashboard");
     } catch (error) {
       console.error("Error saving store:", error);
       alert("가게 정보 저장 중 오류가 발생했습니다.");
@@ -69,10 +95,10 @@ const StoreRegistration = ({ storeId }) => {
   const handleDelete = async () => {
     if (window.confirm("정말로 가게 정보를 삭제하시겠습니까?")) {
       try {
-        await axios.delete(`http://localhost:3000/storeInfo/${storeId}`);
+        await axios.delete(`http://localhost:3000/storeInfo/${bossId}`);
         alert("가게 정보가 성공적으로 삭제되었습니다!");
         resetForm();
-        navigate("/dashboard"); // 삭제 후 대시보드로 이동
+        navigate("/dashboard");
       } catch (error) {
         console.error("Error deleting store:", error);
         alert("가게 삭제 중 오류가 발생했습니다.");
@@ -160,21 +186,6 @@ const StoreRegistration = ({ storeId }) => {
                       variant="outline-secondary"
                       onClick={() => document.getElementById("storeImage").click()}
                       className="d-flex align-items-center">
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        width="16"
-                        height="16"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        className="me-2">
-                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                        <polyline points="17 8 12 3 7 8"></polyline>
-                        <line x1="12" y1="3" x2="12" y2="15"></line>
-                      </svg>
                       파일 선택
                     </Button>
                     <Form.Control
