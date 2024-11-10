@@ -1,11 +1,35 @@
 import React, { useState, useEffect } from "react";
+import { jwtDecode } from "jwt-decode"; // 이름 있는 내보내기 사용
+
 import Cookies from "js-cookie";
 
-// 팔로우한 사람들의 게시물만 가져오는 함수
+// Utility function to decode JWT and extract user ID
+const getUserIdFromToken = () => {
+  const token = Cookies.get("authToken");
+  console.log(1);
+  if (token) {
+    try {
+      const decoded = jwtDecode(token);
+      return decoded._id;
+    } catch (error) {
+      console.error("Error decoding token:", error);
+      return null;
+    }
+  }
+  return null;
+};
+
+// Fetch posts for followed stores
 const fetchFollowedPosts = async (userId) => {
   try {
+    const token = Cookies.get("authToken");
     const response = await fetch(
-      `http://localhost:3000/posts/followed?userId=${userId}`
+      `http://localhost:3000/posts/followed?userId=${userId}`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
     );
     if (!response.ok) {
       throw new Error("Failed to fetch posts");
@@ -103,13 +127,13 @@ export default function UserNewsFeed() {
   const [userId, setUserId] = useState(null);
 
   useEffect(() => {
-    const userIdFromCookie = Cookies.get("userId");
-    setUserId(userIdFromCookie || "Guest");
+    const fetchedUserId = getUserIdFromToken();
+    setUserId(fetchedUserId);
 
     const loadPosts = async () => {
       setLoading(true);
-      if (userIdFromCookie) {
-        const data = await fetchFollowedPosts(userIdFromCookie);
+      if (fetchedUserId) {
+        const data = await fetchFollowedPosts(fetchedUserId);
         setFeedItems(data);
       }
       setLoading(false);
@@ -128,10 +152,12 @@ export default function UserNewsFeed() {
 
   const sendFollowRequest = async (storeId) => {
     try {
+      const token = Cookies.get("authToken");
       const response = await fetch("http://localhost:3000/follow", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({ userId, storeId }),
       });
@@ -155,7 +181,7 @@ export default function UserNewsFeed() {
           item.id === id ? { ...item, followed: !item.followed } : item
         )
       );
-      // 팔로우 후 피드 새로고침
+      // Refresh feed after follow/unfollow
       const updatedFeed = await fetchFollowedPosts(userId);
       setFeedItems(updatedFeed);
     } catch (error) {
@@ -170,8 +196,14 @@ export default function UserNewsFeed() {
       setSearchResults([]);
     } else {
       try {
+        const token = Cookies.get("authToken");
         const response = await fetch(
-          `http://localhost:3000/storeinfo/search?q=${query}`
+          `http://localhost:3000/storeinfo/search?q=${query}`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
         );
         const results = await response.json();
         setSearchResults(results);
@@ -217,7 +249,7 @@ export default function UserNewsFeed() {
         <span
           style={{ fontSize: "16px", fontWeight: "bold", marginTop: "8px" }}
         >
-          안녕하세요 {userId} 님!
+          안녕하세요 {userId ? userId : "Guest"} 님!
         </span>
       </div>
 
