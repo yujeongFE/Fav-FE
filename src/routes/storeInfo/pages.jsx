@@ -14,29 +14,32 @@ const StoreRegistration = () => {
   const [bossId, setBossId] = useState("");
   const navigate = useNavigate();
 
-  // JWT decoding function
+  const getCookie = (cookieName) => {
+    const cookies = document.cookie.split("; ");
+    for (let cookie of cookies) {
+      const [name, value] = cookie.split("=");
+      if (name === cookieName) return value;
+    }
+    return null;
+  };
+
+  const jwtToken = getCookie("authToken");
+
   useEffect(() => {
-    const getCookieValue = (name) =>
-      document.cookie.match("(^|;)\\s*" + name + "\\s*=\\s*([^;]+)")?.pop() || "";
-
-    const token = getCookieValue("authToken");
-
-    if (token) {
+    if (jwtToken) {
       try {
-        const decodedToken = jwtDecode(token);
-        console.log("Decoded token:", decodedToken); // 디버깅을 위한 로그
-        const extractedBossId = decodedToken.boss_id || decodedToken._id || decodedToken.id;
-        if (extractedBossId) {
-          console.log("Extracted Boss ID:", extractedBossId); // 디버깅을 위한 로그
-          setBossId(extractedBossId);
-        } else {
-          console.error("Boss ID not found in token");
-        }
+        const decoded = jwtDecode(jwtToken);
+        console.log(decoded);
+
+        const bossId = decoded._id;
+        setBossId(bossId);
+
+        console.log(`User ID: ${decoded._id}`);
       } catch (error) {
-        console.error("Failed to decode token:", error);
+        console.error("Invalid JWT Token:", error);
       }
     } else {
-      console.error("Token not found in cookies.");
+      console.log("JWT token not found in cookies");
     }
   }, []);
 
@@ -78,7 +81,7 @@ const StoreRegistration = () => {
         await axios.put(`http://localhost:3000/storeInfo/${bossId}`, formData);
         alert("가게 정보가 성공적으로 수정되었습니다!");
       } else {
-        await axios.post(`http://localhost:3000/storeInfo`, formData);
+        await axios.post(`http://localhost:3000/storeInfo/${bossId}`, formData);
         alert("가게가 성공적으로 등록되었습니다!");
       }
       resetForm();
