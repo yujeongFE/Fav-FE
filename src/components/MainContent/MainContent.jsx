@@ -1,61 +1,103 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Line } from "react-chartjs-2";
 import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend } from 'chart.js';
+import {jwtDecode} from "jwt-decode"
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend);
 
 const MainContent = () => {
-  const [selectedPeriod, setSelectedPeriod] = useState('today');
+  const [userName, setUserName] = useState("");
+  const [dashboardData, setDashboardData] = useState(null);
+  const [bossId, setBossId] = useState(null);
+  const todayDate = new Date().toLocaleDateString();
 
-  const followerData = [
-    { time: '10:00 AM', date: '10/11', today: 300, yesterday: 280, lastWeek: 250 },
-    { time: '12:00 PM', date: '10/11', today: 320, yesterday: 290, lastWeek: 260 },
-    { time: '02:00 PM', date: '10/11', today: 350, yesterday: 300, lastWeek: 270 },
-    { time: '04:00 PM', date: '10/11', today: 370, yesterday: 310, lastWeek: 280 },
-    { time: '06:00 PM', date: '10/11', today: 400, yesterday: 330, lastWeek: 300 },
-    { time: '08:00 PM', date: '10/11', today: 420, yesterday: 350, lastWeek: 310 },
-    { time: '10:00 PM', date: '10/11', today: 450, yesterday: 370, lastWeek: 330 },
+  const times = [
+    '12:00 AM', '1:00 AM', '2:00 AM', '3:00 AM', '4:00 AM', '5:00 AM', '6:00 AM',
+    '7:00 AM', '8:00 AM', '9:00 AM', '10:00 AM', '11:00 AM', '12:00 PM', '1:00 PM',
+    '2:00 PM', '3:00 PM', '4:00 PM', '5:00 PM', '6:00 PM', '7:00 PM', '8:00 PM',
+    '9:00 PM', '10:00 PM', '11:00 PM'
   ];
 
-  const visitorData = [
-    { time: '10:00 AM', date: '10/11', today: 50, yesterday: 40, lastWeek: 35 },
-    { time: '12:00 PM', date: '10/11', today: 70, yesterday: 60, lastWeek: 55 },
-    { time: '02:00 PM', date: '10/11', today: 90, yesterday: 80, lastWeek: 75 },
-    { time: '04:00 PM', date: '10/11', today: 100, yesterday: 90, lastWeek: 85 },
-    { time: '06:00 PM', date: '10/11', today: 110, yesterday: 95, lastWeek: 90 },
-    { time: '08:00 PM', date: '10/11', today: 120, yesterday: 100, lastWeek: 95 },
-    { time: '10:00 PM', date: '10/11', today: 130, yesterday: 110, lastWeek: 105 },
-  ];
+  const [followerData, setFollowerData] = useState(Array(times.length).fill(0));
+  const [visitorData, setVisitorData] = useState(Array(times.length).fill(0));
+  const [salesData, setSalesData] = useState(Array(times.length).fill(0));
 
-  const salesData = [
-    { time: '10:00 AM', date: '10/11', today: 150000, yesterday: 140000, lastWeek: 135000 },
-    { time: '12:00 PM', date: '10/11', today: 200000, yesterday: 180000, lastWeek: 175000 },
-    { time: '02:00 PM', date: '10/11', today: 250000, yesterday: 220000, lastWeek: 215000 },
-    { time: '04:00 PM', date: '10/11', today: 300000, yesterday: 270000, lastWeek: 260000 },
-    { time: '06:00 PM', date: '10/11', today: 320000, yesterday: 300000, lastWeek: 295000 },
-    { time: '08:00 PM', date: '10/11', today: 350000, yesterday: 330000, lastWeek: 325000 },
-    { time: '10:00 PM', date: '10/11', today: 380000, yesterday: 360000, lastWeek: 350000 },
-  ];
+  const getCookie = (cookieName) => {
+    const cookies = document.cookie.split('; ');
+    for (let cookie of cookies) {
+      const [name, value] = cookie.split('=');
+      if (name === cookieName) return value;
+    }
+    return null;
+  };
+
+  const jwtToken = getCookie('authToken');
+
+  useEffect(() => {
+    if (jwtToken) {
+      try {
+        const decoded = jwtDecode(jwtToken);
+        console.log(decoded);
+        
+        const bossId = decoded._id;
+        setBossId(bossId);
+
+        console.log(`User ID: ${decoded._id}`);
+      } catch (error) {
+        console.error("Invalid JWT Token:", error);
+      }
+    } else {
+      console.log("JWT token not found in cookies");
+    }
+  }, [jwtToken]);
+
+  useEffect(() => {
+    if (bossId) {
+    fetch(`http://localhost:3000/dashboard/${bossId}`)
+      .then(response => response.json())
+      .then(data => {
+        console.log("Fetched dashboard data:", data);
+        setDashboardData(data);
+        setUserName(data?.boss_id?.name || '');
+        console.log(userName);
+      })
+      .catch(error => console.error("대시보드 데이터를 가져오는데 실패했습니다.", error));
+    }
+  }, [bossId]);
+
+  const incrementData = (data, index, increment) => {
+    const newData = [...data];
+    newData[index] += increment;
+    return newData;
+  };
+
+  useEffect(() => {
+    const updateFollowerCount = setInterval(() => {
+      setFollowerData(prevData => incrementData(prevData, new Date().getHours(), 1));
+    }, 15000);
+
+    const updateVisitorCount = setInterval(() => {
+      setVisitorData(prevData => incrementData(prevData, new Date().getHours(), 1));
+    }, Math.random() * 5000 + 5000);
+
+    const updateSalesAmount = setInterval(() => {
+      setSalesData(prevData => incrementData(prevData, new Date().getHours(), 10000));
+    }, 30000);
+
+    return () => {
+      clearInterval(updateFollowerCount);
+      clearInterval(updateVisitorCount);
+      clearInterval(updateSalesAmount);
+    };
+  }, []);
 
   const getChartData = (data, label) => ({
-    labels: data.map(point => point.time),
+    labels: times,
     datasets: [
       {
-        label: '오늘',
-        data: data.map(point => point.today),
-        borderColor: '#0066FF',
-        fill: false,
-      },
-      {
-        label: '어제',
-        data: data.map(point => point.yesterday),
-        borderColor: '#888888',
-        fill: false,
-      },
-      {
-        label: '지난주',
-        data: data.map(point => point.lastWeek),
-        borderColor: '#28a745',
+        label: label,
+        data: data,
+        borderColor: label === '팔로우 수' ? '#0066FF' : label === '방문자 수' ? '#888888' : '#28a745',
         fill: false,
       }
     ]
@@ -63,6 +105,11 @@ const MainContent = () => {
 
   const options = {
     responsive: true,
+    scales: {
+      y: {
+        beginAtZero: true,
+      }
+    }
   };
 
   return (
@@ -70,16 +117,16 @@ const MainContent = () => {
       <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
         <div style={{ marginBottom: '20px' }}>
           <h1 style={{ fontSize: '24px', marginBottom: '5px' }}>
-            안녕하세요 <span style={{ color: '#0066FF' }}>이나민</span>님,
+            안녕하세요 <span style={{ color: '#0066FF' }}>{userName}</span>님,
           </h1>
           <p style={{ color: '#666' }}>오늘의 대시보드입니다.</p>
         </div>
 
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '20px', marginBottom: '20px' }}>
           {[
-            { title: '팔로우 수', value: '450명', icon: '👥' },
-            { title: '방문자 수', value: '130명', icon: '🚶' },
-            { title: '매출액', value: '380만원', icon: '💰' },
+            { title: '팔로우 수', value: `${followerData.reduce((a, b) => a + b, 0)}명`, icon: '👥' },
+            { title: '방문자 수', value: `${visitorData.reduce((a, b) => a + b, 0)}명`, icon: '🚶' },
+            { title: '매출액', value: `${salesData.reduce((a, b) => a + b, 0) / 10000}만원`, icon: '💰' },
           ].map((metric, index) => (
             <div key={index} style={{ border: '1px solid #ddd', borderRadius: '8px', padding: '15px' }}>
               <div style={{ display: 'flex', alignItems: 'center', marginBottom: '10px' }}>
