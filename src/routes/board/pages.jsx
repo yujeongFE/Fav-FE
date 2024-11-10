@@ -5,11 +5,47 @@ import "bootstrap-icons/font/bootstrap-icons.css";
 import Sidebar from "../../components/SideBar/Sidebar";
 import { Header } from "../../components/Header/Header";
 import { PostModal } from "../../components/Modal/PostModal";
+import { jwtDecode } from "jwt-decode";
 
 const Board = () => {
   const [writing, setWriting] = useState(false);
   const [posts, setPosts] = useState([]);
   const [currentPost, setCurrentPost] = useState(null);
+  const [bossId, setBossId] = useState("");
+
+  const getCookie = (cookieName) => {
+    const cookies = document.cookie.split("; ");
+    for (let cookie of cookies) {
+      const [name, value] = cookie.split("=");
+      if (name === cookieName) return value;
+    }
+    return null;
+  };
+
+  const jwtToken = getCookie("authToken");
+  useEffect(() => {
+    if (jwtToken) {
+      try {
+        const decoded = jwtDecode(jwtToken);
+        console.log(decoded);
+
+        const bossId = decoded._id;
+        setBossId(bossId);
+
+        console.log(`User ID: ${decoded._id}`);
+      } catch (error) {
+        console.error("Invalid JWT Token:", error);
+      }
+    } else {
+      console.log("JWT token not found in cookies");
+    }
+  }, [jwtToken]);
+
+  useEffect(() => {
+    if (bossId) {
+      fetchPosts(bossId);
+    }
+  }, [bossId]);
 
   const handleModalOpen = () => {
     setWriting(true);
@@ -22,16 +58,12 @@ const Board = () => {
 
   const fetchPosts = async () => {
     try {
-      const response = await axios.get("http://localhost:3000/posts");
+      const response = await axios.get(`http://localhost:3000/posts/${bossId}`);
       setPosts(response.data);
     } catch (error) {
       console.error("Error fetching posts:", error);
     }
   };
-
-  useEffect(() => {
-    fetchPosts();
-  }, []);
 
   const handleEdit = (id) => {
     const postToEdit = posts.find((post) => post._id === id);
@@ -42,7 +74,7 @@ const Board = () => {
   const handlePostUpdated = async (updatedPost) => {
     try {
       // 글이 등록 또는 수정된 후 서버에서 최신 글 목록을 다시 가져옵니다.
-      const response = await axios.get("http://localhost:3000/posts");
+      const response = await axios.get(`http://localhost:3000/posts/${bossId}`);
       setPosts(response.data);
     } catch (error) {
       console.error("Error fetching updated posts:", error);
