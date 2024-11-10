@@ -4,6 +4,9 @@ import Board from "../routes/board/pages.jsx";
 import DashBoard from "../routes/dashboard/pages.jsx";
 import SignupForm from "../components/Auth/SignupForm.jsx";
 import Login from "../components/Auth/LoginService.jsx";
+import Userboard from "../routes/userboard/pages.jsx";
+import StoreInfo from "../routes/storeInfo/pages.jsx";
+
 export const mainRoutes = [
   {
     path: "/",
@@ -23,6 +26,16 @@ export const mainRoutes = [
   {
     path: "/dashboard",
     element: <DashBoard />,
+    index: true,
+  },
+  {
+    path: "/userboard",
+    element: <Userboard />,
+    index: true,
+  },
+  {
+    path: "/storeInfo",
+    element: <StoreInfo />,
     index: true,
   },
 ];

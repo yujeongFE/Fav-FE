@@ -1,4 +1,11 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
+
+// 가짜 API 호출 함수 (실제 서버 데이터로 교체 가능)
+const fetchPosts = async () => {
+  const response = await fetch("http://localhost:3000/posts");
+  const data = await response.json();
+  return data;
+};
 
 function HeartIcon({ filled }) {
   return (
@@ -18,14 +25,16 @@ function HeartIcon({ filled }) {
   );
 }
 
-function FeedItem({ item, onLike, onToggleDetails }) {
+function FeedItem({ item, onLike, onFollow }) {
+  const content = item.content || "";
+
   return (
     <div
       style={{
         border: "1px solid #e0e0e0",
-        borderRadius: "8px",
+        borderRadius: "20px",
         padding: "16px",
-        marginBottom: "16px",
+        marginBottom: "10px",
         backgroundColor: "white",
       }}
     >
@@ -51,98 +60,45 @@ function FeedItem({ item, onLike, onToggleDetails }) {
               </span>
             </div>
             <p style={{ margin: "8px 0 0", fontSize: "14px", color: "#333" }}>
-              {item.message}
+              {content}
             </p>
           </div>
         </div>
-        <button
-          onClick={() => onLike(item.id)}
-          style={{
-            background: "none",
-            border: "none",
-            cursor: "pointer",
-            color: item.liked ? "red" : "#666",
-          }}
-          aria-label={item.liked ? "좋아요 취소" : "좋아요"}
-        >
-          <HeartIcon filled={item.liked} />
-        </button>
-      </div>
-      {item.showDetails && (
-        <div style={{ marginTop: "12px", fontSize: "14px", color: "#333" }}>
-          {item.details}
+        <div>
+          <button
+            onClick={() => onLike(item.id)}
+            style={{
+              background: "none",
+              border: "none",
+              cursor: "pointer",
+              color: item.liked ? "red" : "#666",
+            }}
+            aria-label={item.liked ? "좋아요 취소" : "좋아요"}
+          >
+            <HeartIcon filled={item.liked} />
+          </button>
         </div>
-      )}
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "flex-end",
-          marginTop: "8px",
-        }}
-      >
-        <button
-          onClick={() => onToggleDetails(item.id)}
-          style={{
-            background: "none",
-            border: "none",
-            color: "#666",
-            fontSize: "14px",
-            cursor: "pointer",
-          }}
-        >
-          {item.showDetails ? "접기" : "더보기"}
-        </button>
       </div>
     </div>
   );
 }
 
-export default function Component() {
+export default function UserNewsFeed() {
   const [feedItems, setFeedItems] = useState([]);
   const [loading, setLoading] = useState(false);
-  const containerRef = useRef(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchResults, setSearchResults] = useState([]);
 
-  const loadMoreItems = () => {
+  useEffect(() => {
     setLoading(true);
-    setTimeout(() => {
-      const newItems = Array.from({ length: 5 }, (_, i) => ({
-        id: feedItems.length + i + 1,
-        title: `가게 ${feedItems.length + i + 1}`,
-        time: "11:04",
-        message:
-          "안녕하세요 단골여러분. 좋은 소식이 있습니다. 자세한 내용은 더보기를 클릭해주세요...",
-        details:
-          "이번 주 금요일부터 일요일까지 전 메뉴 20% 할인 이벤트를 진행합니다. 많은 관심 부탁드립니다!",
-        image: `/placeholder.svg?height=40&width=40&text=${feedItems.length + i + 1}`,
-        liked: false,
-        showDetails: false,
-      }));
-      setFeedItems((prev) => [...prev, ...newItems]);
+    const loadPosts = async () => {
+      const data = await fetchPosts();
+      setFeedItems(data);
       setLoading(false);
-    }, 1000);
-  };
-
-  useEffect(() => {
-    loadMoreItems();
-  }, []);
-
-  useEffect(() => {
-    const container = containerRef.current;
-    if (!container) return;
-
-    const handleScroll = () => {
-      if (
-        container.scrollHeight - container.scrollTop <=
-          container.clientHeight + 1 &&
-        !loading
-      ) {
-        loadMoreItems();
-      }
     };
 
-    container.addEventListener("scroll", handleScroll);
-    return () => container.removeEventListener("scroll", handleScroll);
-  }, [loading]);
+    loadPosts();
+  }, []);
 
   const handleLike = (id) => {
     setFeedItems((prev) =>
@@ -152,12 +108,30 @@ export default function Component() {
     );
   };
 
-  const handleToggleDetails = (id) => {
+  const handleFollow = (id) => {
     setFeedItems((prev) =>
       prev.map((item) =>
-        item.id === id ? { ...item, showDetails: !item.showDetails } : item
+        item.id === id ? { ...item, followed: !item.followed } : item
       )
     );
+  };
+
+  const handleSearchChange = async (e) => {
+    const query = e.target.value;
+    setSearchQuery(query);
+    if (query.trim() === "") {
+      setSearchResults([]);
+    } else {
+      try {
+        const response = await fetch(
+          `http://localhost:3000/storeinfo/search?q=${query}`
+        );
+        const results = await response.json();
+        setSearchResults(results);
+      } catch (error) {
+        console.error("검색 중 오류가 발생했습니다.", error);
+      }
+    }
   };
 
   return (
@@ -170,9 +144,11 @@ export default function Component() {
         margin: "0 auto",
         height: "100vh",
         fontFamily: "Arial, sans-serif",
+        justifyContent: "center",
+        alignItems: "center",
+        backgroundColor: "#f0f0f0",
       }}
     >
-      {/* App Icon */}
       <div
         style={{
           display: "flex",
@@ -193,25 +169,120 @@ export default function Component() {
         />
       </div>
 
-      {/* Scrollable Feed Container */}
       <div
-        ref={containerRef}
         style={{
-          flex: 1,
-          overflowY: "auto",
-          padding: "16px",
-          backgroundColor: "#f0f0f0",
+          width: "100%",
+          backgroundColor: "white",
+          borderRadius: "24px",
+          padding: "8px",
+          marginBottom: "16px",
+          position: "relative",
         }}
       >
-        {feedItems.map((item) => (
-          <FeedItem
-            key={item.id}
-            item={item}
-            onLike={handleLike}
-            onToggleDetails={handleToggleDetails}
-          />
-        ))}
-        {loading && <p style={{ textAlign: "center" }}>로딩 중...</p>}
+        <input
+          type="text"
+          placeholder="검색..."
+          value={searchQuery}
+          onChange={handleSearchChange}
+          style={{
+            width: "100%",
+            padding: "8px 16px",
+            border: "1px solid #ccc",
+            borderRadius: "24px",
+            outline: "none",
+            boxShadow: "0 2px 8px rgba(0,0,0,0.2)",
+            backgroundColor: "white",
+            color: "black",
+          }}
+        />
+        {searchQuery && (
+          <div
+            style={{
+              position: "absolute",
+              top: "100%",
+              left: 0,
+              right: 0,
+              backgroundColor: "white",
+              border: "1px solid #ccc",
+              borderRadius: "8px",
+              maxHeight: "200px",
+              overflowY: "auto",
+              boxShadow: "0 2px 8px rgba(0,0,0,0.2)",
+              zIndex: 1,
+            }}
+          >
+            {searchResults.length > 0 ? (
+              searchResults.map((item) => (
+                <div
+                  key={item.id}
+                  style={{
+                    padding: "8px",
+                    borderBottom: "1px solid #eee",
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    cursor: "pointer",
+                  }}
+                >
+                  <div
+                    style={{
+                      display: "flex",
+                      gap: "12px",
+                      alignItems: "center",
+                    }}
+                  >
+                    <img
+                      src={item.image} // item 객체에 가게 이미지를 포함했다고 가정
+                      alt={`${item.store_name} 이미지`}
+                      style={{
+                        width: "40px",
+                        height: "40px",
+                        borderRadius: "50%",
+                        objectFit: "cover",
+                      }}
+                    />
+                    <span>{item.store_name}</span>
+                  </div>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleFollow(item.id);
+                    }}
+                    style={{
+                      background: "none",
+                      border: "1px solid #ccc",
+                      borderRadius: "8px",
+                      padding: "4px 8px",
+                      cursor: "pointer",
+                      color: item.followed ? "blue" : "#666",
+                    }}
+                  >
+                    {item.followed ? "팔로잉" : "팔로우"}
+                  </button>
+                </div>
+              ))
+            ) : (
+              <div style={{ padding: "8px", color: "#999" }}>
+                검색 결과가 없습니다.
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+
+      <div style={{ flex: 1, overflowY: "auto", width: "100%" }}>
+        {loading ? (
+          <div>로딩 중...</div>
+        ) : (
+          feedItems.map((item) => (
+            <FeedItem
+              key={item.id}
+              item={item}
+              onLike={handleLike}
+              onFollow={handleFollow}
+            />
+          ))
+        )}
       </div>
     </div>
   );
