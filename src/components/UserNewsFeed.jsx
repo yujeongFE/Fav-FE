@@ -1,11 +1,21 @@
 import React, { useState, useEffect } from "react";
-import Cookies from "js-cookie"; // js-cookie를 추가하여 쿠키를 쉽게 관리합니다.
+import Cookies from "js-cookie";
 
-// 가짜 API 호출 함수 (실제 서버 데이터로 교체 가능)
-const fetchPosts = async () => {
-  const response = await fetch("http://localhost:3000/posts");
-  const data = await response.json();
-  return data;
+// 팔로우한 사람들의 게시물만 가져오는 함수
+const fetchFollowedPosts = async (userId) => {
+  try {
+    const response = await fetch(
+      `http://localhost:3000/posts/followed?userId=${userId}`
+    );
+    if (!response.ok) {
+      throw new Error("Failed to fetch posts");
+    }
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error("Error fetching followed posts:", error);
+    return [];
+  }
 };
 
 function HeartIcon({ filled }) {
@@ -90,17 +100,18 @@ export default function UserNewsFeed() {
   const [loading, setLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState([]);
-  const [userId, setUserId] = useState(null); // 유저 아이디 상태 추가
+  const [userId, setUserId] = useState(null);
 
   useEffect(() => {
-    // 쿠키에서 유저 아이디를 읽어옴
     const userIdFromCookie = Cookies.get("userId");
-    setUserId(userIdFromCookie || "Guest"); // 유저 아이디가 없으면 "Guest"로 설정
+    setUserId(userIdFromCookie || "Guest");
 
-    setLoading(true);
     const loadPosts = async () => {
-      const data = await fetchPosts();
-      setFeedItems(data);
+      setLoading(true);
+      if (userIdFromCookie) {
+        const data = await fetchFollowedPosts(userIdFromCookie);
+        setFeedItems(data);
+      }
       setLoading(false);
     };
 
@@ -115,12 +126,41 @@ export default function UserNewsFeed() {
     );
   };
 
-  const handleFollow = (id) => {
-    setFeedItems((prev) =>
-      prev.map((item) =>
-        item.id === id ? { ...item, followed: !item.followed } : item
-      )
-    );
+  const sendFollowRequest = async (storeId) => {
+    try {
+      const response = await fetch("http://localhost:3000/follow", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ userId, storeId }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Follow request failed");
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error("Error sending follow request:", error);
+      throw error;
+    }
+  };
+
+  const handleFollow = async (id) => {
+    try {
+      await sendFollowRequest(id);
+      setSearchResults((prev) =>
+        prev.map((item) =>
+          item.id === id ? { ...item, followed: !item.followed } : item
+        )
+      );
+      // 팔로우 후 피드 새로고침
+      const updatedFeed = await fetchFollowedPosts(userId);
+      setFeedItems(updatedFeed);
+    } catch (error) {
+      console.error("Failed to follow store:", error);
+    }
   };
 
   const handleSearchChange = async (e) => {
@@ -145,8 +185,8 @@ export default function UserNewsFeed() {
     <div
       style={{
         display: "flex",
-        flexDirection: "column", // 세로로 배치
-        alignItems: "center", // 가운데 정렬
+        flexDirection: "column",
+        alignItems: "center",
         justifyContent: "center",
         width: "40vh",
         margin: "0 auto",
@@ -158,12 +198,11 @@ export default function UserNewsFeed() {
       <div
         style={{
           display: "flex",
-          flexDirection: "column", // 세로로 배치
+          flexDirection: "column",
           alignItems: "center",
           marginBottom: "16px",
         }}
       >
-        {/* 로고 부분 */}
         <img
           src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-BpDKq494k2vGEAtePMrbcfdRmb8N5d.png"
           alt="커피 컵 로고"
@@ -175,7 +214,6 @@ export default function UserNewsFeed() {
           }}
         />
 
-        {/* 유저 인사 문구 */}
         <span
           style={{ fontSize: "16px", fontWeight: "bold", marginTop: "8px" }}
         >
@@ -183,7 +221,6 @@ export default function UserNewsFeed() {
         </span>
       </div>
 
-      {/* 검색창 부분 */}
       <div
         style={{
           display: "flex",
@@ -250,7 +287,7 @@ export default function UserNewsFeed() {
                     }}
                   >
                     <img
-                      src={item.image} // item 객체에 가게 이미지를 포함했다고 가정
+                      src={item.image}
                       alt={`${item.store_name} 이미지`}
                       style={{
                         width: "40px",

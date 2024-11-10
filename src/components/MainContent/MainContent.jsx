@@ -1,83 +1,72 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Line } from "react-chartjs-2";
 import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend } from 'chart.js';
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend);
 
 const MainContent = () => {
-  const [selectedPeriod, setSelectedPeriod] = useState('today');
-  
-  const todayDate = new Date().toLocaleDateString();  // 오늘 날짜 설정
-  
-  // 12:00 AM부터 11:59 PM까지 시간대 생성
+  const [userName, setUserName] = useState("");
+  const [dashboardData, setDashboardData] = useState(null);
+  const todayDate = new Date().toLocaleDateString();
+
   const times = [
-    '12:00 AM', '02:00 AM', '04:00 AM', '06:00 AM', '08:00 AM', '10:00 AM',
-    '12:00 PM', '02:00 PM', '04:00 PM', '06:00 PM', '08:00 PM', '11:59 PM'
+    '12:00 AM', '1:00 AM', '2:00 AM', '3:00 AM', '4:00 AM', '5:00 AM', '6:00 AM',
+    '7:00 AM', '8:00 AM', '9:00 AM', '10:00 AM', '11:00 AM', '12:00 PM', '1:00 PM',
+    '2:00 PM', '3:00 PM', '4:00 PM', '5:00 PM', '6:00 PM', '7:00 PM', '8:00 PM',
+    '9:00 PM', '10:00 PM', '11:00 PM'
   ];
 
-  // 랜덤 값 생성 함수 (min~max 사이 값)
-  const getRandomValue = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
+  const [followerData, setFollowerData] = useState(Array(times.length).fill(0));
+  const [visitorData, setVisitorData] = useState(Array(times.length).fill(0));
+  const [salesData, setSalesData] = useState(Array(times.length).fill(0));
 
-  // 시간대별 값이 총합을 맞추도록 랜덤 값 분배 함수
-  const generateRandomData = (todayTotal, yesterdayTotal, lastWeekTotal) => {
-    const data = times.map(() => ({
-      time: '',
-      date: todayDate,
-      today: 0,
-      yesterday: 0,
-      lastWeek: 0
-    }));
+  const bossId = "672cc71589f2134d84012164";
 
-    // 랜덤으로 값을 생성하여 총합에 맞게 분배
-    let remainingToday = todayTotal;
-    let remainingYesterday = yesterdayTotal;
-    let remainingLastWeek = lastWeekTotal;
+  useEffect(() => {
+    fetch(`http://localhost:3000/dashboard/${bossId}`)
+      .then(response => response.json())
+      .then(data => {
+        console.log("Fetched dashboard data:", data);
+        setDashboardData(data);
+        setUserName(data?.boss_id?.name || '');
+        console.log(userName);
+      })
+      .catch(error => console.error("대시보드 데이터를 가져오는데 실패했습니다.", error));
+  }, []);
 
-    for (let i = 0; i < data.length; i++) {
-      data[i].today = getRandomValue(0, remainingToday / (data.length - i));
-      data[i].yesterday = getRandomValue(0, remainingYesterday / (data.length - i));
-      data[i].lastWeek = getRandomValue(0, remainingLastWeek / (data.length - i));
-
-      remainingToday -= data[i].today;
-      remainingYesterday -= data[i].yesterday;
-      remainingLastWeek -= data[i].lastWeek;
-    }
-
-    return data;
+  const incrementData = (data, index, increment) => {
+    const newData = [...data];
+    newData[index] += increment;
+    return newData;
   };
 
-  // 데이터 생성
-  const followerData = generateRandomData(20, 20, 100);
-  const visitorData = generateRandomData(50, 50, 250);
-  const salesData = generateRandomData(100, 100, 500);
+  useEffect(() => {
+    const updateFollowerCount = setInterval(() => {
+      setFollowerData(prevData => incrementData(prevData, new Date().getHours(), 1));
+    }, 15000);
 
-  // 오늘 총합 계산 함수
-  const calculateTotal = (data) => data.reduce((total, point) => total + point.today, 0);
+    const updateVisitorCount = setInterval(() => {
+      setVisitorData(prevData => incrementData(prevData, new Date().getHours(), 1));
+    }, Math.random() * 10000 + 5000);  // Random interval between 5-15 seconds
 
-  // 각 총합 계산
-  const totalFollowers = calculateTotal(followerData);
-  const totalVisitors = calculateTotal(visitorData);
-  const totalSales = calculateTotal(salesData);
+    const updateSalesAmount = setInterval(() => {
+      setSalesData(prevData => incrementData(prevData, new Date().getHours(), 10000));
+    }, 30000);
+
+    return () => {
+      clearInterval(updateFollowerCount);
+      clearInterval(updateVisitorCount);
+      clearInterval(updateSalesAmount);
+    };
+  }, []);
 
   const getChartData = (data, label) => ({
-    labels: data.map(point => point.time),
+    labels: times,
     datasets: [
       {
-        label: '오늘',
-        data: data.map(point => point.today),
-        borderColor: '#0066FF',
-        fill: false,
-      },
-      {
-        label: '어제',
-        data: data.map(point => point.yesterday),
-        borderColor: '#888888',
-        fill: false,
-      },
-      {
-        label: '지난주',
-        data: data.map(point => point.lastWeek),
-        borderColor: '#28a745',
+        label: label,
+        data: data,
+        borderColor: label === '팔로우 수' ? '#0066FF' : label === '방문자 수' ? '#888888' : '#28a745',
         fill: false,
       }
     ]
@@ -85,6 +74,11 @@ const MainContent = () => {
 
   const options = {
     responsive: true,
+    scales: {
+      y: {
+        beginAtZero: true,
+      }
+    }
   };
 
   return (
@@ -92,16 +86,16 @@ const MainContent = () => {
       <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
         <div style={{ marginBottom: '20px' }}>
           <h1 style={{ fontSize: '24px', marginBottom: '5px' }}>
-            안녕하세요 <span style={{ color: '#0066FF' }}>이나민</span>님,
+            안녕하세요 <span style={{ color: '#0066FF' }}>{userName}</span>님,
           </h1>
           <p style={{ color: '#666' }}>오늘의 대시보드입니다.</p>
         </div>
 
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '20px', marginBottom: '20px' }}>
           {[
-            { title: '팔로우 수', value: `${totalFollowers}명`, icon: '👥' },
-            { title: '방문자 수', value: `${totalVisitors}명`, icon: '🚶' },
-            { title: '매출액', value: `${totalSales}만원`, icon: '💰' },
+            { title: '팔로우 수', value: `${followerData.reduce((a, b) => a + b, 0)}명`, icon: '👥' },
+            { title: '방문자 수', value: `${visitorData.reduce((a, b) => a + b, 0)}명`, icon: '🚶' },
+            { title: '매출액', value: `${salesData.reduce((a, b) => a + b, 0) / 10000}만원`, icon: '💰' },
           ].map((metric, index) => (
             <div key={index} style={{ border: '1px solid #ddd', borderRadius: '8px', padding: '15px' }}>
               <div style={{ display: 'flex', alignItems: 'center', marginBottom: '10px' }}>
