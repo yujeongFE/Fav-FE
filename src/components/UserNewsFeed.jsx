@@ -3,18 +3,20 @@ import { jwtDecode } from "jwt-decode";
 import Cookies from "js-cookie";
 
 // Utility function to decode JWT and extract user ID
-const getUserIdFromToken = () => {
+const getUserInfoFromToken = () => {
   const token = Cookies.get("authToken");
+
   if (token) {
     try {
       const decoded = jwtDecode(token);
-      return decoded._id;
+      console.log(decoded);
+      return { id: decoded._id, name: decoded.name };
     } catch (error) {
-      console.error("Error decoding token:", error);
-      return null;
+      console.error("토큰 디코딩 오류:", error);
+      return { id: null, name: null };
     }
   }
-  return null;
+  return { id: null, name: null };
 };
 
 // Fetch posts for followed stores
@@ -123,10 +125,12 @@ export default function UserNewsFeed() {
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState([]);
   const [userId, setUserId] = useState(null);
+  const [userName, setUserName] = useState(null);
 
   useEffect(() => {
-    const fetchedUserId = getUserIdFromToken();
+    const { id: fetchedUserId, name: fetchedUserName } = getUserInfoFromToken();
     setUserId(fetchedUserId);
+    setUserName(fetchedUserName);
 
     const loadPosts = async () => {
       setLoading(true);
@@ -151,7 +155,7 @@ export default function UserNewsFeed() {
   const sendFollowRequest = async (storeId) => {
     try {
       const token = Cookies.get("authToken");
-      console.log("Auth Token:", token); // Add this line
+      console.log("Auth Token:", token);
       if (!token) {
         throw new Error("No authentication token found");
       }
@@ -255,7 +259,7 @@ export default function UserNewsFeed() {
         <span
           style={{ fontSize: "16px", fontWeight: "bold", marginTop: "8px" }}
         >
-          안녕하세요 {userId ? userId : "Guest"} 님!
+          안녕하세요 {userName ? userName : "Guest"} 님!
         </span>
       </div>
 
