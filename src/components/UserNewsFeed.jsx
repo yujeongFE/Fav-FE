@@ -21,14 +21,11 @@ const getUserInfoFromToken = () => {
 const fetchFollowedPosts = async (userId) => {
   try {
     const token = Cookies.get("authToken");
-    const response = await fetch(
-      `http://43.201.2.61:3000/posts/followed/${userId}`,
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      }
-    );
+    const response = await fetch(`http://localhost:3000/posts/followed/${userId}`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
     if (!response.ok) {
       throw new Error("Failed to fetch posts");
     }
@@ -51,8 +48,7 @@ function HeartIcon({ filled }) {
       stroke="currentColor"
       strokeWidth="2"
       strokeLinecap="round"
-      strokeLinejoin="round"
-    >
+      strokeLinejoin="round">
       <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z" />
     </svg>
   );
@@ -70,8 +66,7 @@ function FeedItem({ item, onLike, onFollow }) {
         padding: "16px",
         marginBottom: "10px",
         backgroundColor: "white",
-      }}
-    >
+      }}>
       <div style={{ display: "flex", justifyContent: "space-between" }}>
         <div style={{ display: "flex", gap: "12px" }}>
           <img
@@ -86,16 +81,10 @@ function FeedItem({ item, onLike, onFollow }) {
           />
           <div>
             <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-              <h2 style={{ margin: 0, fontSize: "16px", fontWeight: "bold" }}>
-                {item.title}
-              </h2>
-              <span style={{ fontSize: "14px", color: "#666" }}>
-                {item.time}
-              </span>
+              <h2 style={{ margin: 0, fontSize: "16px", fontWeight: "bold" }}>{item.title}</h2>
+              <span style={{ fontSize: "14px", color: "#666" }}>{item.time}</span>
             </div>
-            <p style={{ margin: "8px 0 0", fontSize: "14px", color: "#333" }}>
-              {content}
-            </p>
+            <p style={{ margin: "8px 0 0", fontSize: "14px", color: "#333" }}>{content}</p>
           </div>
         </div>
         <div>
@@ -107,8 +96,7 @@ function FeedItem({ item, onLike, onFollow }) {
               cursor: "pointer",
               color: item.liked ? "red" : "#666",
             }}
-            aria-label={item.liked ? "좋아요 취소" : "좋아요"}
-          >
+            aria-label={item.liked ? "좋아요 취소" : "좋아요"}>
             <HeartIcon filled={item.liked} />
           </button>
         </div>
@@ -144,9 +132,7 @@ export default function UserNewsFeed() {
 
   const handleLike = (id) => {
     setFeedItems((prev) =>
-      prev.map((item) =>
-        item.id === id ? { ...item, liked: !item.liked } : item
-      )
+      prev.map((item) => (item.id === id ? { ...item, liked: !item.liked } : item))
     );
   };
 
@@ -162,7 +148,7 @@ export default function UserNewsFeed() {
 
       console.log("팔로우 요청 보내는 중:", { userId, storeId });
 
-      const response = await fetch("http://43.201.2.61:3000/api/follow", {
+      const response = await fetch("http://localhost:3000/api/follow", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -190,9 +176,7 @@ export default function UserNewsFeed() {
       const result = await sendFollowRequest(storeId);
       console.log("팔로우 요청 결과:", result);
       setSearchResults((prev) =>
-        prev.map((item) =>
-          item._id === storeId ? { ...item, followed: !item.followed } : item
-        )
+        prev.map((item) => (item._id === storeId ? { ...item, followed: !item.followed } : item))
       );
       // 팔로우/언팔로우 후 피드 새로고침
       const updatedFeed = await fetchFollowedPosts(userId);
@@ -211,14 +195,11 @@ export default function UserNewsFeed() {
     } else {
       try {
         const token = Cookies.get("authToken");
-        const response = await fetch(
-          `http://43.201.2.61:3000/storeinfo/search?q=${query}`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
+        const response = await fetch(`http://localhost:3000/storeinfo/search?q=${query}`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
         const results = await response.json();
         setSearchResults(results);
       } catch (error) {
@@ -239,16 +220,14 @@ export default function UserNewsFeed() {
         height: "100vh",
         fontFamily: "Arial, sans-serif",
         backgroundColor: "#f0f0f0",
-      }}
-    >
+      }}>
       <div
         style={{
           display: "flex",
           flexDirection: "column",
           alignItems: "center",
           marginBottom: "16px",
-        }}
-      >
+        }}>
         <img
           src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-BpDKq494k2vGEAtePMrbcfdRmb8N5d.png"
           alt="커피 컵 로고"
@@ -260,9 +239,7 @@ export default function UserNewsFeed() {
           }}
         />
 
-        <span
-          style={{ fontSize: "16px", fontWeight: "bold", marginTop: "8px" }}
-        >
+        <span style={{ fontSize: "16px", fontWeight: "bold", marginTop: "8px" }}>
           안녕하세요 {userName ? userName : "Guest"} 님!
         </span>
       </div>
@@ -278,8 +255,7 @@ export default function UserNewsFeed() {
           padding: "8px",
           marginBottom: "16px",
           position: "relative",
-        }}
-      >
+        }}>
         <input
           type="text"
           placeholder="검색..."
@@ -310,8 +286,7 @@ export default function UserNewsFeed() {
               overflowY: "auto",
               boxShadow: "0 2px 8px rgba(0,0,0,0.2)",
               zIndex: 1,
-            }}
-          >
+            }}>
             {searchResults.length > 0 ? (
               searchResults.map((item) => (
                 <div
@@ -323,15 +298,13 @@ export default function UserNewsFeed() {
                     justifyContent: "space-between",
                     alignItems: "center",
                     cursor: "pointer",
-                  }}
-                >
+                  }}>
                   <div
                     style={{
                       display: "flex",
                       gap: "12px",
                       alignItems: "center",
-                    }}
-                  >
+                    }}>
                     <img
                       src={item.image}
                       alt={`${item.store_name} 이미지`}
@@ -355,16 +328,13 @@ export default function UserNewsFeed() {
                       color: "#1a73e8",
                       cursor: "pointer",
                       fontSize: "12px",
-                    }}
-                  >
+                    }}>
                     {item.followed ? "팔로우 취소" : "팔로우"}
                   </button>
                 </div>
               ))
             ) : (
-              <div style={{ padding: "8px", textAlign: "center" }}>
-                검색 결과 없음
-              </div>
+              <div style={{ padding: "8px", textAlign: "center" }}>검색 결과 없음</div>
             )}
           </div>
         )}
@@ -375,12 +345,7 @@ export default function UserNewsFeed() {
       ) : (
         <div style={{ width: "100%" }}>
           {feedItems.map((item) => (
-            <FeedItem
-              key={item.id}
-              item={item}
-              onLike={handleLike}
-              onFollow={handleFollow}
-            />
+            <FeedItem key={item.id} item={item} onLike={handleLike} onFollow={handleFollow} />
           ))}
         </div>
       )}

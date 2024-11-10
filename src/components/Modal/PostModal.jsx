@@ -63,9 +63,9 @@ export const PostModal = ({ writing, onClose, post, onPostUpdated }) => {
     try {
       let response;
       if (isEditing && post) {
-        response = await axios.put(`http://43.201.2.61:3000/${post._id}`, postData);
+        response = await axios.put(`http://localhost:3000/${post._id}`, postData);
       } else {
-        response = await axios.post("http://43.201.2.61:3000/posts", postData);
+        response = await axios.post("http://localhost:3000/posts", postData);
       }
 
       await onPostUpdated(response.data); // 수정된 부분: 상태 업데이트 대기
