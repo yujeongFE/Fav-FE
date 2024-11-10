@@ -33,7 +33,7 @@ export default function Login() {
     }
 
     try {
-      const response = await axios.post('http://localhost:3000/api/login', { email, password }, { withCredentials: true});
+      const response = await axios.post('http://43.201.2.61:3000/api/login', { email, password }, { withCredentials: true});
       if (response.status === 200) {
         const { redirectPath } = response.data;
 

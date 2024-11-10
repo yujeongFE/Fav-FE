@@ -53,7 +53,7 @@ const MainContent = () => {
 
   useEffect(() => {
     if (bossId) {
-    fetch(`http://localhost:3000/dashboard/${bossId}`)
+    fetch(`http://43.201.2.61:3000/${bossId}`)
       .then(response => response.json())
       .then(data => {
         console.log("Fetched dashboard data:", data);

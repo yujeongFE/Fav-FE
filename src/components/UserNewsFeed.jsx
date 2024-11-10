@@ -22,7 +22,7 @@ const fetchFollowedPosts = async (userId) => {
   try {
     const token = Cookies.get("authToken");
     const response = await fetch(
-      `http://localhost:3000/posts/followed/${userId}`,
+      `http://43.201.2.61:3000/posts/followed/${userId}`,
       {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -162,7 +162,7 @@ export default function UserNewsFeed() {
 
       console.log("팔로우 요청 보내는 중:", { userId, storeId });
 
-      const response = await fetch("http://localhost:3000/api/follow", {
+      const response = await fetch("http://43.201.2.61:3000/api/follow", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -212,7 +212,7 @@ export default function UserNewsFeed() {
       try {
         const token = Cookies.get("authToken");
         const response = await fetch(
-          `http://localhost:3000/storeinfo/search?q=${query}`,
+          `http://43.201.2.61:3000/storeinfo/search?q=${query}`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
