@@ -5,11 +5,9 @@ import Cookies from "js-cookie";
 // Utility function to decode JWT and extract user ID
 const getUserInfoFromToken = () => {
   const token = Cookies.get("authToken");
-
   if (token) {
     try {
       const decoded = jwtDecode(token);
-      console.log(decoded);
       return { id: decoded._id, name: decoded.name };
     } catch (error) {
       console.error("토큰 디코딩 오류:", error);
@@ -24,7 +22,7 @@ const fetchFollowedPosts = async (userId) => {
   try {
     const token = Cookies.get("authToken");
     const response = await fetch(
-      `http://localhost:3000/posts/followed?userId=${userId}`,
+      `http://localhost:3000/posts/followed/${userId}`,
       {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -157,45 +155,51 @@ export default function UserNewsFeed() {
       const token = Cookies.get("authToken");
       console.log("Auth Token:", token);
       if (!token) {
-        throw new Error("No authentication token found");
+        throw new Error("인증 토큰을 찾을 수 없습니다");
       }
+      const decodedToken = jwtDecode(token);
+      const userId = decodedToken._id;
+
+      console.log("팔로우 요청 보내는 중:", { userId, storeId });
+
       const response = await fetch("http://localhost:3000/api/follow", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ storeId }),
+        body: JSON.stringify({ userId, storeId }),
       });
 
+      const data = await response.json();
+
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || "Follow request failed");
+        throw new Error(data.message || "팔로우 요청 실패");
       }
 
-      return await response.json();
+      return data;
     } catch (error) {
-      console.error("Error sending follow request:", error);
+      console.error("팔로우 요청 중 오류 발생:", error);
       throw error;
     }
   };
 
-  const handleFollow = async (id) => {
+  const handleFollow = async (storeId) => {
     try {
-      console.log("Attempting to follow/unfollow store:", id);
-      const result = await sendFollowRequest(id);
-      console.log("Follow request result:", result);
+      console.log("가게 팔로우/언팔로우 시도:", storeId);
+      const result = await sendFollowRequest(storeId);
+      console.log("팔로우 요청 결과:", result);
       setSearchResults((prev) =>
         prev.map((item) =>
-          item.id === id ? { ...item, followed: !item.followed } : item
+          item._id === storeId ? { ...item, followed: !item.followed } : item
         )
       );
-      // Refresh feed after follow/unfollow
+      // 팔로우/언팔로우 후 피드 새로고침
       const updatedFeed = await fetchFollowedPosts(userId);
       setFeedItems(updatedFeed);
     } catch (error) {
-      console.error("Failed to follow store:", error.message);
-      alert(`Failed to follow store: ${error.message}`);
+      console.error("가게 팔로우 실패:", error.message);
+      alert(`가게 팔로우 실패: ${error.message}`);
     }
   };
 
@@ -311,7 +315,7 @@ export default function UserNewsFeed() {
             {searchResults.length > 0 ? (
               searchResults.map((item) => (
                 <div
-                  key={item.id}
+                  key={item._id}
                   style={{
                     padding: "8px",
                     borderBottom: "1px solid #eee",
@@ -343,7 +347,7 @@ export default function UserNewsFeed() {
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
-                      handleFollow(item.id);
+                      handleFollow(item._id);
                     }}
                     style={{
                       background: "none",
