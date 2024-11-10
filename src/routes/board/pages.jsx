@@ -10,6 +10,53 @@ const Board = () => {
   const [writing, setWriting] = useState(false);
   const [posts, setPosts] = useState([]);
   const [currentPost, setCurrentPost] = useState(null);
+  const [bossId, setBossId] = useState("");
+  const [store_Name, setStore_Name] = useState("");
+
+  const getCookie = (cookieName) => {
+    const cookies = document.cookie.split("; ");
+    for (let cookie of cookies) {
+      const [name, value] = cookie.split("=");
+      if (name === cookieName) return value;
+    }
+    return null;
+  };
+
+  const jwtToken = getCookie("authToken");
+  useEffect(() => {
+    if (jwtToken) {
+      try {
+        const decoded = jwtDecode(jwtToken);
+        console.log(decoded);
+
+        const bossId = decoded._id;
+        setBossId(bossId);
+
+        console.log(`User ID: ${decoded._id}`);
+      } catch (error) {
+        console.error("Invalid JWT Token:", error);
+      }
+    } else {
+      console.log("JWT token not found in cookies");
+    }
+  }, [jwtToken]);
+
+  useEffect(() => {
+    if (bossId) {
+      fetchPosts(bossId);
+
+      const fetchStoreName = async () => {
+        try {
+          const response = await axios.get(`http://localhost:3000/storeInfo/${bossId}`);
+          setStore_Name(response.data.store_name);
+        } catch (error) {
+          console.error("Error fetching store name:", error);
+        }
+      };
+
+      fetchStoreName();
+    }
+  }, [bossId]);
 
   const handleModalOpen = () => {
     setWriting(true);
@@ -41,8 +88,7 @@ const Board = () => {
 
   const handlePostUpdated = async (updatedPost) => {
     try {
-      // 글이 등록 또는 수정된 후 서버에서 최신 글 목록을 다시 가져옵니다.
-      const response = await axios.get("http://localhost:3000/posts");
+      const response = await axios.get(`http://localhost:3000/posts/${bossId}`);
       setPosts(response.data);
     } catch (error) {
       console.error("Error fetching updated posts:", error);
