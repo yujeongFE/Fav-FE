@@ -1,12 +1,10 @@
 import React, { useState, useEffect } from "react";
-import { jwtDecode } from "jwt-decode"; // 이름 있는 내보내기 사용
-
+import { jwtDecode } from "jwt-decode";
 import Cookies from "js-cookie";
 
 // Utility function to decode JWT and extract user ID
 const getUserIdFromToken = () => {
   const token = Cookies.get("authToken");
-  console.log(1);
   if (token) {
     try {
       const decoded = jwtDecode(token);
@@ -153,17 +151,22 @@ export default function UserNewsFeed() {
   const sendFollowRequest = async (storeId) => {
     try {
       const token = Cookies.get("authToken");
-      const response = await fetch("http://localhost:3000/follow", {
+      console.log("Auth Token:", token); // Add this line
+      if (!token) {
+        throw new Error("No authentication token found");
+      }
+      const response = await fetch("http://localhost:3000/api/follow", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ userId, storeId }),
+        body: JSON.stringify({ storeId }),
       });
 
       if (!response.ok) {
-        throw new Error("Follow request failed");
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Follow request failed");
       }
 
       return await response.json();
@@ -175,7 +178,9 @@ export default function UserNewsFeed() {
 
   const handleFollow = async (id) => {
     try {
-      await sendFollowRequest(id);
+      console.log("Attempting to follow/unfollow store:", id);
+      const result = await sendFollowRequest(id);
+      console.log("Follow request result:", result);
       setSearchResults((prev) =>
         prev.map((item) =>
           item.id === id ? { ...item, followed: !item.followed } : item
@@ -185,7 +190,8 @@ export default function UserNewsFeed() {
       const updatedFeed = await fetchFollowedPosts(userId);
       setFeedItems(updatedFeed);
     } catch (error) {
-      console.error("Failed to follow store:", error);
+      console.error("Failed to follow store:", error.message);
+      alert(`Failed to follow store: ${error.message}`);
     }
   };
 
