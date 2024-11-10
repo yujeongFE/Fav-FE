@@ -34,9 +34,11 @@ export default function Login() {
 
     try {
       const response = await axios.post('http://localhost:3000/api/login', { email, password }, { withCredentials: true});
-      if (response.data.role) {
+      if (response.status === 200) {
+        const { redirectPath } = response.data;
+
         setErrorMessage('');
-        navigate(response.data.role === 'boss' ? '/dashboard' : '/userboard');
+        navigate(redirectPath);
       } else {
         alert('일치하는 회원이 존재하지 않습니다.');
       }
