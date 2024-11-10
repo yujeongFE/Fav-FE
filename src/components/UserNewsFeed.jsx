@@ -21,6 +21,7 @@ const getUserInfoFromToken = () => {
 const fetchFollowedPosts = async (userId) => {
   try {
     const token = Cookies.get("authToken");
+    console.log("Fetching posts for user:", userId);
     const response = await fetch(
       `http://localhost:3000/posts/followed/${userId}`,
       {
@@ -33,6 +34,7 @@ const fetchFollowedPosts = async (userId) => {
       throw new Error("Failed to fetch posts");
     }
     const data = await response.json();
+    console.log("Fetched posts:", data);
     return data;
   } catch (error) {
     console.error("Error fetching followed posts:", error);
@@ -40,26 +42,13 @@ const fetchFollowedPosts = async (userId) => {
   }
 };
 
-function HeartIcon({ filled }) {
-  return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      width="24"
-      height="24"
-      viewBox="0 0 24 24"
-      fill={filled ? "currentColor" : "none"}
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z" />
-    </svg>
-  );
-}
-
-function FeedItem({ item, onLike, onFollow }) {
-  const content = item.content || "";
+function FeedItem({ post, onLike }) {
+  const content = post.content || "";
+  const storeName = post.boss_id ? post.boss_id.store_name : "Unknown Store";
+  const storePhoto =
+    post.boss_id && post.boss_id.store_photo
+      ? post.boss_id.store_photo
+      : "/placeholder.svg";
 
   return (
     <div
@@ -75,8 +64,8 @@ function FeedItem({ item, onLike, onFollow }) {
       <div style={{ display: "flex", justifyContent: "space-between" }}>
         <div style={{ display: "flex", gap: "12px" }}>
           <img
-            src={item.image}
-            alt={`${item.title} 가게 이미지`}
+            src={storePhoto}
+            alt={`${storeName} 가게 이미지`}
             style={{
               width: "40px",
               height: "40px",
@@ -87,10 +76,10 @@ function FeedItem({ item, onLike, onFollow }) {
           <div>
             <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
               <h2 style={{ margin: 0, fontSize: "16px", fontWeight: "bold" }}>
-                {item.title}
+                {storeName}
               </h2>
               <span style={{ fontSize: "14px", color: "#666" }}>
-                {item.time}
+                {new Date(post.created_at).toLocaleString()}
               </span>
             </div>
             <p style={{ margin: "8px 0 0", fontSize: "14px", color: "#333" }}>
@@ -98,26 +87,13 @@ function FeedItem({ item, onLike, onFollow }) {
             </p>
           </div>
         </div>
-        <div>
-          <button
-            onClick={() => onLike(item.id)}
-            style={{
-              background: "none",
-              border: "none",
-              cursor: "pointer",
-              color: item.liked ? "red" : "#666",
-            }}
-            aria-label={item.liked ? "좋아요 취소" : "좋아요"}
-          >
-            <HeartIcon filled={item.liked} />
-          </button>
-        </div>
+        <div></div>
       </div>
     </div>
   );
 }
 
-export default function UserNewsFeed() {
+function UserNewsFeed() {
   const [feedItems, setFeedItems] = useState([]);
   const [loading, setLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -145,7 +121,7 @@ export default function UserNewsFeed() {
   const handleLike = (id) => {
     setFeedItems((prev) =>
       prev.map((item) =>
-        item.id === id ? { ...item, liked: !item.liked } : item
+        item._id === id ? { ...item, liked: !item.liked } : item
       )
     );
   };
@@ -186,15 +162,15 @@ export default function UserNewsFeed() {
 
   const handleFollow = async (storeId) => {
     try {
-      console.log("가게 팔로우/언팔로우 시도:", storeId);
+      console.log("Following/Unfollowing store:", storeId);
       const result = await sendFollowRequest(storeId);
-      console.log("팔로우 요청 결과:", result);
+      console.log("Follow/Unfollow result:", result);
       setSearchResults((prev) =>
         prev.map((item) =>
           item._id === storeId ? { ...item, followed: !item.followed } : item
         )
       );
-      // 팔로우/언팔로우 후 피드 새로고침
+      // 팔로우/언팔로우 후 즉시 피드 새로고침
       const updatedFeed = await fetchFollowedPosts(userId);
       setFeedItems(updatedFeed);
     } catch (error) {
@@ -374,16 +350,15 @@ export default function UserNewsFeed() {
         <p>Loading...</p>
       ) : (
         <div style={{ width: "100%" }}>
-          {feedItems.map((item) => (
-            <FeedItem
-              key={item.id}
-              item={item}
-              onLike={handleLike}
-              onFollow={handleFollow}
-            />
+          {feedItems.map((post) => (
+            <FeedItem key={post._id} post={post} onLike={handleLike} />
           ))}
         </div>
       )}
+
+      {/* 디버그 정보 */}
     </div>
   );
 }
+
+export default UserNewsFeed;
