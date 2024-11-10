@@ -6,36 +6,58 @@ ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, T
 
 const MainContent = () => {
   const [selectedPeriod, setSelectedPeriod] = useState('today');
-
-  const followerData = [
-    { time: '10:00 AM', date: '10/11', today: 300, yesterday: 280, lastWeek: 250 },
-    { time: '12:00 PM', date: '10/11', today: 320, yesterday: 290, lastWeek: 260 },
-    { time: '02:00 PM', date: '10/11', today: 350, yesterday: 300, lastWeek: 270 },
-    { time: '04:00 PM', date: '10/11', today: 370, yesterday: 310, lastWeek: 280 },
-    { time: '06:00 PM', date: '10/11', today: 400, yesterday: 330, lastWeek: 300 },
-    { time: '08:00 PM', date: '10/11', today: 420, yesterday: 350, lastWeek: 310 },
-    { time: '10:00 PM', date: '10/11', today: 450, yesterday: 370, lastWeek: 330 },
+  
+  const todayDate = new Date().toLocaleDateString();  // 오늘 날짜 설정
+  
+  // 12:00 AM부터 11:59 PM까지 시간대 생성
+  const times = [
+    '12:00 AM', '02:00 AM', '04:00 AM', '06:00 AM', '08:00 AM', '10:00 AM',
+    '12:00 PM', '02:00 PM', '04:00 PM', '06:00 PM', '08:00 PM', '11:59 PM'
   ];
 
-  const visitorData = [
-    { time: '10:00 AM', date: '10/11', today: 50, yesterday: 40, lastWeek: 35 },
-    { time: '12:00 PM', date: '10/11', today: 70, yesterday: 60, lastWeek: 55 },
-    { time: '02:00 PM', date: '10/11', today: 90, yesterday: 80, lastWeek: 75 },
-    { time: '04:00 PM', date: '10/11', today: 100, yesterday: 90, lastWeek: 85 },
-    { time: '06:00 PM', date: '10/11', today: 110, yesterday: 95, lastWeek: 90 },
-    { time: '08:00 PM', date: '10/11', today: 120, yesterday: 100, lastWeek: 95 },
-    { time: '10:00 PM', date: '10/11', today: 130, yesterday: 110, lastWeek: 105 },
-  ];
+  // 랜덤 값 생성 함수 (min~max 사이 값)
+  const getRandomValue = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
 
-  const salesData = [
-    { time: '10:00 AM', date: '10/11', today: 150000, yesterday: 140000, lastWeek: 135000 },
-    { time: '12:00 PM', date: '10/11', today: 200000, yesterday: 180000, lastWeek: 175000 },
-    { time: '02:00 PM', date: '10/11', today: 250000, yesterday: 220000, lastWeek: 215000 },
-    { time: '04:00 PM', date: '10/11', today: 300000, yesterday: 270000, lastWeek: 260000 },
-    { time: '06:00 PM', date: '10/11', today: 320000, yesterday: 300000, lastWeek: 295000 },
-    { time: '08:00 PM', date: '10/11', today: 350000, yesterday: 330000, lastWeek: 325000 },
-    { time: '10:00 PM', date: '10/11', today: 380000, yesterday: 360000, lastWeek: 350000 },
-  ];
+  // 시간대별 값이 총합을 맞추도록 랜덤 값 분배 함수
+  const generateRandomData = (todayTotal, yesterdayTotal, lastWeekTotal) => {
+    const data = times.map(() => ({
+      time: '',
+      date: todayDate,
+      today: 0,
+      yesterday: 0,
+      lastWeek: 0
+    }));
+
+    // 랜덤으로 값을 생성하여 총합에 맞게 분배
+    let remainingToday = todayTotal;
+    let remainingYesterday = yesterdayTotal;
+    let remainingLastWeek = lastWeekTotal;
+
+    for (let i = 0; i < data.length; i++) {
+      data[i].today = getRandomValue(0, remainingToday / (data.length - i));
+      data[i].yesterday = getRandomValue(0, remainingYesterday / (data.length - i));
+      data[i].lastWeek = getRandomValue(0, remainingLastWeek / (data.length - i));
+
+      remainingToday -= data[i].today;
+      remainingYesterday -= data[i].yesterday;
+      remainingLastWeek -= data[i].lastWeek;
+    }
+
+    return data;
+  };
+
+  // 데이터 생성
+  const followerData = generateRandomData(20, 20, 100);
+  const visitorData = generateRandomData(50, 50, 250);
+  const salesData = generateRandomData(100, 100, 500);
+
+  // 오늘 총합 계산 함수
+  const calculateTotal = (data) => data.reduce((total, point) => total + point.today, 0);
+
+  // 각 총합 계산
+  const totalFollowers = calculateTotal(followerData);
+  const totalVisitors = calculateTotal(visitorData);
+  const totalSales = calculateTotal(salesData);
 
   const getChartData = (data, label) => ({
     labels: data.map(point => point.time),
@@ -77,9 +99,9 @@ const MainContent = () => {
 
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '20px', marginBottom: '20px' }}>
           {[
-            { title: '팔로우 수', value: '450명', icon: '👥' },
-            { title: '방문자 수', value: '130명', icon: '🚶' },
-            { title: '매출액', value: '380만원', icon: '💰' },
+            { title: '팔로우 수', value: `${totalFollowers}명`, icon: '👥' },
+            { title: '방문자 수', value: `${totalVisitors}명`, icon: '🚶' },
+            { title: '매출액', value: `${totalSales}만원`, icon: '💰' },
           ].map((metric, index) => (
             <div key={index} style={{ border: '1px solid #ddd', borderRadius: '8px', padding: '15px' }}>
               <div style={{ display: 'flex', alignItems: 'center', marginBottom: '10px' }}>
