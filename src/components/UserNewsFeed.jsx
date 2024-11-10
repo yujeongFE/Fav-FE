@@ -1,22 +1,20 @@
 import React, { useState, useEffect } from "react";
-import { jwtDecode } from "jwt-decode"; // 이름 있는 내보내기 사용
-
+import { jwtDecode } from "jwt-decode";
 import Cookies from "js-cookie";
 
 // Utility function to decode JWT and extract user ID
-const getUserIdFromToken = () => {
+const getUserInfoFromToken = () => {
   const token = Cookies.get("authToken");
-  console.log(1);
   if (token) {
     try {
       const decoded = jwtDecode(token);
-      return decoded._id;
+      return { id: decoded._id, name: decoded.name };
     } catch (error) {
-      console.error("Error decoding token:", error);
-      return null;
+      console.error("토큰 디코딩 오류:", error);
+      return { id: null, name: null };
     }
   }
-  return null;
+  return { id: null, name: null };
 };
 
 // Fetch posts for followed stores
@@ -24,7 +22,7 @@ const fetchFollowedPosts = async (userId) => {
   try {
     const token = Cookies.get("authToken");
     const response = await fetch(
-      `http://localhost:3000/posts/followed?userId=${userId}`,
+      `http://localhost:3000/posts/followed/${userId}`,
       {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -125,10 +123,12 @@ export default function UserNewsFeed() {
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState([]);
   const [userId, setUserId] = useState(null);
+  const [userName, setUserName] = useState(null);
 
   useEffect(() => {
-    const fetchedUserId = getUserIdFromToken();
+    const { id: fetchedUserId, name: fetchedUserName } = getUserInfoFromToken();
     setUserId(fetchedUserId);
+    setUserName(fetchedUserName);
 
     const loadPosts = async () => {
       setLoading(true);
@@ -153,7 +153,16 @@ export default function UserNewsFeed() {
   const sendFollowRequest = async (storeId) => {
     try {
       const token = Cookies.get("authToken");
-      const response = await fetch("http://localhost:3000/follow", {
+      console.log("Auth Token:", token);
+      if (!token) {
+        throw new Error("인증 토큰을 찾을 수 없습니다");
+      }
+      const decodedToken = jwtDecode(token);
+      const userId = decodedToken._id;
+
+      console.log("팔로우 요청 보내는 중:", { userId, storeId });
+
+      const response = await fetch("http://localhost:3000/api/follow", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -162,30 +171,35 @@ export default function UserNewsFeed() {
         body: JSON.stringify({ userId, storeId }),
       });
 
+      const data = await response.json();
+
       if (!response.ok) {
-        throw new Error("Follow request failed");
+        throw new Error(data.message || "팔로우 요청 실패");
       }
 
-      return await response.json();
+      return data;
     } catch (error) {
-      console.error("Error sending follow request:", error);
+      console.error("팔로우 요청 중 오류 발생:", error);
       throw error;
     }
   };
 
-  const handleFollow = async (id) => {
+  const handleFollow = async (storeId) => {
     try {
-      await sendFollowRequest(id);
+      console.log("가게 팔로우/언팔로우 시도:", storeId);
+      const result = await sendFollowRequest(storeId);
+      console.log("팔로우 요청 결과:", result);
       setSearchResults((prev) =>
         prev.map((item) =>
-          item.id === id ? { ...item, followed: !item.followed } : item
+          item._id === storeId ? { ...item, followed: !item.followed } : item
         )
       );
-      // Refresh feed after follow/unfollow
+      // 팔로우/언팔로우 후 피드 새로고침
       const updatedFeed = await fetchFollowedPosts(userId);
       setFeedItems(updatedFeed);
     } catch (error) {
-      console.error("Failed to follow store:", error);
+      console.error("가게 팔로우 실패:", error.message);
+      alert(`가게 팔로우 실패: ${error.message}`);
     }
   };
 
@@ -249,7 +263,7 @@ export default function UserNewsFeed() {
         <span
           style={{ fontSize: "16px", fontWeight: "bold", marginTop: "8px" }}
         >
-          안녕하세요 {userId ? userId : "Guest"} 님!
+          안녕하세요 {userName ? userName : "Guest"} 님!
         </span>
       </div>
 
@@ -301,7 +315,7 @@ export default function UserNewsFeed() {
             {searchResults.length > 0 ? (
               searchResults.map((item) => (
                 <div
-                  key={item.id}
+                  key={item._id}
                   style={{
                     padding: "8px",
                     borderBottom: "1px solid #eee",
@@ -333,7 +347,7 @@ export default function UserNewsFeed() {
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
-                      handleFollow(item.id);
+                      handleFollow(item._id);
                     }}
                     style={{
                       background: "none",
