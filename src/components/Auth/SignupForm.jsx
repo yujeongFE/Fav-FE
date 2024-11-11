@@ -95,7 +95,7 @@ export default function SignupForm() {
 
     if (validateEmail() && validatePassword() && validateUserTypeFields()) {
       try {
-        const endpoint = userType === 'boss' ? '/boss/signup' : '/guest/signup';
+        const endpoint = userType === 'boss' ? 'boss/signup' : 'guest/signup';
 
         await axios.post(`http://localhost:3000${endpoint}`, formData, { withCredentials: true});
         navigate('/');

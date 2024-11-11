@@ -53,15 +53,15 @@ const MainContent = () => {
 
   useEffect(() => {
     if (bossId) {
-    fetch(`http://localhost:3000/dashboard/${bossId}`)
-      .then(response => response.json())
-      .then(data => {
-        console.log("Fetched dashboard data:", data);
-        setDashboardData(data);
-        setUserName(data?.boss_id?.name || '');
-        console.log(userName);
-      })
-      .catch(error => console.error("대시보드 데이터를 가져오는데 실패했습니다.", error));
+      fetch(`http://localhost:3000/dashboard/${bossId}`)
+        .then((response) => response.json())
+        .then((data) => {
+          console.log("Fetched dashboard data:", data);
+          setDashboardData(data);
+          setUserName(data?.boss_id?.name || "");
+          console.log(userName);
+        })
+        .catch((error) => console.error("대시보드 데이터를 가져오는데 실패했습니다.", error));
     }
   }, [bossId]);
 
