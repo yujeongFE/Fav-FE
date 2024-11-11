@@ -42,7 +42,7 @@ const fetchFollowedPosts = async (userId) => {
   }
 };
 
-function FeedItem({ post, onLike }) {
+function FeedItem({ post }) {
   const content = post.content || "";
   const storeName = post.store_name || "Unknown Store";
   const storePhoto = post.photo || "/placeholder.svg";
@@ -73,7 +73,7 @@ function FeedItem({ post, onLike }) {
           <div>
             <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
               <h2 style={{ margin: 0, fontSize: "16px", fontWeight: "bold" }}>
-                {storeName}
+                {post.store_name}
               </h2>
               <span style={{ fontSize: "14px", color: "#666" }}>
                 {new Date(post.created_at).toLocaleString()}
@@ -84,13 +84,12 @@ function FeedItem({ post, onLike }) {
             </p>
           </div>
         </div>
-        <div></div>
       </div>
     </div>
   );
 }
 
-function UserNewsFeed() {
+export default function UserNewsFeed() {
   const [feedItems, setFeedItems] = useState([]);
   const [loading, setLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -114,14 +113,6 @@ function UserNewsFeed() {
 
     loadPosts();
   }, []);
-
-  const handleLike = (id) => {
-    setFeedItems((prev) =>
-      prev.map((item) =>
-        item._id === id ? { ...item, liked: !item.liked } : item
-      )
-    );
-  };
 
   const sendFollowRequest = async (storeId) => {
     try {
@@ -348,12 +339,12 @@ function UserNewsFeed() {
       ) : (
         <div style={{ width: "100%" }}>
           {feedItems.map((post) => (
-            <FeedItem key={post._id} post={post} onLike={handleLike} />
+            <FeedItem key={post._id} post={post} />
           ))}
         </div>
       )}
+
+      {/* 디버그 정보 */}
     </div>
   );
 }
-
-export default UserNewsFeed;

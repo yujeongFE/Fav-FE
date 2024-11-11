@@ -63,7 +63,7 @@ export const PostModal = ({ writing, onClose, post, onPostUpdated }) => {
     try {
       let response;
       if (isEditing && post) {
-        response = await axios.put(`http://localhost:3000/posts/${post._id}`, postData);
+        response = await axios.put(`http://localhost:3000/${post._id}`, postData);
       } else {
         response = await axios.post("http://localhost:3000/posts", postData);
       }
