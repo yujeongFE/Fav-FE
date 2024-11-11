@@ -85,7 +85,7 @@ const StoreRegistration = () => {
         alert("가게가 성공적으로 등록되었습니다!");
       }
       resetForm();
-      navigate("/dashboard");
+      navigate("/page/dashboard");
     } catch (error) {
       console.error("Error saving store:", error);
       alert("가게 정보 저장 중 오류가 발생했습니다.");
@@ -98,7 +98,7 @@ const StoreRegistration = () => {
         await axios.delete(`http://43.201.2.61/storeInfo/${bossId}`);
         alert("가게 정보가 성공적으로 삭제되었습니다!");
         resetForm();
-        navigate("/dashboard");
+        navigate("/page/dashboard");
       } catch (error) {
         console.error("Error deleting store:", error);
         alert("가게 삭제 중 오류가 발생했습니다.");
