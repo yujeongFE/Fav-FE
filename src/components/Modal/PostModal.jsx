@@ -36,12 +36,8 @@ export const PostModal = ({ writing, onClose, post, onPostUpdated }) => {
     if (jwtToken) {
       try {
         const decoded = jwtDecode(jwtToken);
-        console.log(decoded);
-
-        const bossId = decoded._id;
-        setBossId(bossId);
-
         console.log(`User ID: ${decoded._id}`);
+        setBossId(decoded._id);
       } catch (error) {
         console.error("Invalid JWT Token:", error);
       }
@@ -63,13 +59,13 @@ export const PostModal = ({ writing, onClose, post, onPostUpdated }) => {
     try {
       let response;
       if (isEditing && post) {
-        response = await axios.put(`http://localhost:3000/${post._id}`, postData);
+        response = await axios.put(`http://localhost:3000/posts/${post._id}`, postData); // 상대 경로 사용
       } else {
-        response = await axios.post("http://localhost:3000/posts", postData);
+        response = await axios.post("http://localhost:3000/posts", postData); // 상대 경로 사용
       }
 
-      await onPostUpdated(response.data); // 수정된 부분: 상태 업데이트 대기
-      onClose(); // 모달 닫기
+      await onPostUpdated(response.data); // 상태 업데이트 대기
+      onClose(); // 성공 시 모달 닫기
       setContent("");
       setCrowdLevel("");
       setIsEditing(false);
