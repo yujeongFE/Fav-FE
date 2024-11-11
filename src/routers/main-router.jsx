@@ -14,27 +14,27 @@ export const mainRoutes = [
     index: true,
   },
   {
-    path: "/signup",
+    path: "/page/signup",
     element: <SignupForm />,
     index: true,
   },
   {
-    path: "/board",
+    path: "/page/board",
     element: <Board />,
     index: true,
   },
   {
-    path: "/dashboard",
+    path: "/page/dashboard",
     element: <DashBoard />,
     index: true,
   },
   {
-    path: "/userboard",
+    path: "/page/userboard",
     element: <Userboard />,
     index: true,
   },
   {
-    path: "/storeInfo",
+    path: "/page/storeInfo",
     element: <StoreInfo />,
     index: true,
   },

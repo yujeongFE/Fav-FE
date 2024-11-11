@@ -210,7 +210,7 @@ export default function Login() {
           </button>
           <button
             type="button"
-            onClick={() => navigate("/signup")}
+            onClick={() => navigate("/page/signup")}
             onMouseEnter={() => setSignupHover(true)}
             onMouseLeave={() => setSignupHover(false)}
             style={{
