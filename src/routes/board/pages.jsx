@@ -5,11 +5,61 @@ import "bootstrap-icons/font/bootstrap-icons.css";
 import Sidebar from "../../components/SideBar/Sidebar";
 import { Header } from "../../components/Header/Header";
 import { PostModal } from "../../components/Modal/PostModal";
+import { jwtDecode } from "jwt-decode";
 
 const Board = () => {
   const [writing, setWriting] = useState(false);
   const [posts, setPosts] = useState([]);
   const [currentPost, setCurrentPost] = useState(null);
+  const [bossId, setBossId] = useState("");
+  const [store_Name, setStore_Name] = useState("");
+  const [winner, setWinner] = useState(null);
+  const [isSpinning, setIsSpinning] = useState(false);
+
+  const getCookie = (cookieName) => {
+    const cookies = document.cookie.split("; ");
+    for (let cookie of cookies) {
+      const [name, value] = cookie.split("=");
+      if (name === cookieName) return value;
+    }
+    return null;
+  };
+
+  const jwtToken = getCookie("authToken");
+  useEffect(() => {
+    if (jwtToken) {
+      try {
+        const decoded = jwtDecode(jwtToken);
+        console.log(decoded);
+
+        const bossId = decoded._id;
+        setBossId(bossId);
+
+        console.log(`User ID: ${decoded._id}`);
+      } catch (error) {
+        console.error("Invalid JWT Token:", error);
+      }
+    } else {
+      console.log("JWT token not found in cookies");
+    }
+  }, [jwtToken]);
+
+  useEffect(() => {
+    if (bossId) {
+      fetchPosts(bossId);
+
+      const fetchStoreName = async () => {
+        try {
+          const response = await axios.get(`http://localhost:3000/storeInfo/${bossId}`);
+          setStore_Name(response.data.store_name);
+        } catch (error) {
+          console.error("Error fetching store name:", error);
+        }
+      };
+
+      fetchStoreName();
+    }
+  }, [bossId]);
 
   const handleModalOpen = () => {
     setWriting(true);
@@ -22,16 +72,12 @@ const Board = () => {
 
   const fetchPosts = async () => {
     try {
-      const response = await axios.get("http://localhost:3000/posts");
+      const response = await axios.get(`http://localhost:3000/posts/${bossId}`);
       setPosts(response.data);
     } catch (error) {
       console.error("Error fetching posts:", error);
     }
   };
-
-  useEffect(() => {
-    fetchPosts();
-  }, []);
 
   const handleEdit = (id) => {
     const postToEdit = posts.find((post) => post._id === id);
@@ -41,8 +87,7 @@ const Board = () => {
 
   const handlePostUpdated = async (updatedPost) => {
     try {
-      // 글이 등록 또는 수정된 후 서버에서 최신 글 목록을 다시 가져옵니다.
-      const response = await axios.get("http://localhost:3000/posts");
+      const response = await axios.get(`http://localhost:3000/posts/${bossId}`);
       setPosts(response.data);
     } catch (error) {
       console.error("Error fetching updated posts:", error);
@@ -72,9 +117,24 @@ const Board = () => {
     return date.toLocaleString("ko-KR", options);
   };
 
-  const MessageCard = ({ content, updated_at, status, postId, onEdit, onDelete }) => (
+  const selectRandomWinner = () => {
+    setIsSpinning(true);
+    setTimeout(() => {
+      const randomIndex = Math.floor(Math.random() * posts.length);
+      setWinner(posts[randomIndex]);
+      setIsSpinning(false);
+    }, 2000);
+  };
+
+  const resetWinner = () => {
+    setWinner(null);
+  };
+
+  const MessageCard = ({ content, updated_at, status, postId, onEdit, onDelete, isWinner }) => (
     <div
-      className={`card mb-3 shadow-sm rounded-lg ${status === "busy" ? "border-danger" : "border-success"}`}>
+      className={`card mb-3 shadow-sm rounded-lg ${status === "busy" ? "border-danger" : "border-success"} ${
+        isWinner ? "border-primary border-4" : ""
+      }`}>
       <div className="card-body">
         <div className="d-flex align-items-center">
           <img
@@ -96,7 +156,6 @@ const Board = () => {
               {status === "HIGH" ? "혼잡해요" : status === "MEDIUM" ? "보통이에요" : "여유로워요"}
             </span>
           )}
-
           <div className="ms-3">
             <button className="btn btn-sm btn-outline-warning" onClick={() => onEdit(postId)}>
               <i className="bi bi-pencil"></i> 수정
@@ -114,13 +173,49 @@ const Board = () => {
     <main className="flex-grow-1 p-4 white">
       <div className="d-flex justify-content-between align-items-center mb-4">
         <div>
-          <h1 className="h2 fw-bold">메가커피 성수역점</h1>
+          <h1 className="h2 fw-bold">{store_Name}</h1>
           <button className="btn btn-outline-primary mt-2 me-2">사장님</button>
         </div>
         <button className="btn btn-primary" onClick={handleModalOpen}>
           <i className="bi bi-plus-circle me-2"></i> 글 추가하기
         </button>
       </div>
+
+      <div className="mb-4">
+        <h2 className="h4 mb-3">랜덤 아메리카노 게임</h2>
+        <button
+          className="btn btn-success me-2"
+          onClick={selectRandomWinner}
+          disabled={isSpinning || posts.length === 0}>
+          {isSpinning ? (
+            <>
+              <span
+                className="spinner-border spinner-border-sm me-2"
+                role="status"
+                aria-hidden="true"></span>
+              선택 중...
+            </>
+          ) : (
+            <>
+              <i className="bi bi-cup-hot me-2"></i>
+              당첨자 뽑기
+            </>
+          )}
+        </button>
+        <button className="btn btn-outline-secondary" onClick={resetWinner} disabled={!winner}>
+          <i className="bi bi-arrow-counterclockwise me-2"></i>
+          초기화
+        </button>
+      </div>
+
+      {winner && (
+        <div className="alert alert-success mb-4" role="alert">
+          <h4 className="alert-heading">🎉 당첨자</h4>
+          <p>{winner.content}</p>
+          <hr />
+          <p className="mb-0">작성 시간: {formatDate(winner.updated_at)}</p>
+        </div>
+      )}
 
       <div className="overflow-auto">
         {posts.map((post) => (
@@ -132,6 +227,7 @@ const Board = () => {
             status={post.crowd_level}
             onEdit={handleEdit}
             onDelete={handleDelete}
+            isWinner={winner && winner._id === post._id}
           />
         ))}
       </div>

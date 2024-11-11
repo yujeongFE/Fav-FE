@@ -2,11 +2,13 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap-icons/font/bootstrap-icons.css";
+import { jwtDecode } from "jwt-decode";
 
 export const PostModal = ({ writing, onClose, post, onPostUpdated }) => {
   const [content, setContent] = useState("");
   const [crowdLevel, setCrowdLevel] = useState("");
   const [isEditing, setIsEditing] = useState(false);
+  const [bossId, setBossId] = useState(null);
 
   useEffect(() => {
     if (post) {
@@ -20,11 +22,35 @@ export const PostModal = ({ writing, onClose, post, onPostUpdated }) => {
     }
   }, [post]);
 
+  const getCookie = (cookieName) => {
+    const cookies = document.cookie.split("; ");
+    for (let cookie of cookies) {
+      const [name, value] = cookie.split("=");
+      if (name === cookieName) return value;
+    }
+    return null;
+  };
+
+  const jwtToken = getCookie("authToken");
+  useEffect(() => {
+    if (jwtToken) {
+      try {
+        const decoded = jwtDecode(jwtToken);
+        console.log(`User ID: ${decoded._id}`);
+        setBossId(decoded._id);
+      } catch (error) {
+        console.error("Invalid JWT Token:", error);
+      }
+    } else {
+      console.log("JWT token not found in cookies");
+    }
+  }, [jwtToken]);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     const postData = {
-      boss_id: "672cc71589f2134d84012164",
+      boss_id: bossId,
       content: content,
       is_open: true,
       crowd_level: crowdLevel,
@@ -33,13 +59,13 @@ export const PostModal = ({ writing, onClose, post, onPostUpdated }) => {
     try {
       let response;
       if (isEditing && post) {
-        response = await axios.put(`http://localhost:3000/posts/${post._id}`, postData);
+        response = await axios.put(`http://localhost:3000/posts/${post._id}`, postData); // 상대 경로 사용
       } else {
-        response = await axios.post("http://localhost:3000/posts", postData);
+        response = await axios.post("http://localhost:3000/posts", postData); // 상대 경로 사용
       }
 
-      await onPostUpdated(response.data); // 수정된 부분: 상태 업데이트 대기
-      onClose(); // 모달 닫기
+      await onPostUpdated(response.data); // 상태 업데이트 대기
+      onClose(); // 성공 시 모달 닫기
       setContent("");
       setCrowdLevel("");
       setIsEditing(false);

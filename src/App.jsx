@@ -9,24 +9,12 @@ function renderRoutes(routesObj) {
   return routesObj.map((route) => {
     if (route.children) {
       return (
-        <Route
-          key={route.path}
-          path={route.path}
-          index={route.index}
-          element={route.element}
-        >
+        <Route key={route.path} path={route.path} index={route.index} element={route.element}>
           {route.children ? renderRoutes(route.children) : null}
         </Route>
       );
     }
-    return (
-      <Route
-        key={route.path}
-        path={route.path}
-        index={route.index}
-        element={route.element}
-      />
-    );
+    return <Route key={route.path} path={route.path} index={route.index} element={route.element} />;
   });
 }
 
