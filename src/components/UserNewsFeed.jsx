@@ -58,31 +58,33 @@ function FeedItem({ post }) {
         backgroundColor: "white",
       }}
     >
-      <div style={{ display: "flex", justifyContent: "space-between" }}>
-        <div style={{ display: "flex", gap: "12px" }}>
-          <img
-            src={storePhoto}
-            alt={`${storeName} 가게 이미지`}
+      <div style={{ display: "flex", gap: "12px" }}>
+        <div style={{ flex: 1 }}>
+          <h2
             style={{
-              width: "40px",
-              height: "40px",
-              borderRadius: "50%",
-              objectFit: "cover",
+              margin: 0,
+              fontSize: "18px",
+              fontWeight: "bold",
+              marginBottom: "4px",
             }}
-          />
-          <div>
-            <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-              <h2 style={{ margin: 0, fontSize: "16px", fontWeight: "bold" }}>
-                {post.store_name}
-              </h2>
-              <span style={{ fontSize: "14px", color: "#666" }}>
-                {new Date(post.created_at).toLocaleString()}
-              </span>
-            </div>
-            <p style={{ margin: "8px 0 0", fontSize: "14px", color: "#333" }}>
-              {content}
-            </p>
+          >
+            {storeName}
+          </h2>
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "8px",
+              marginBottom: "8px",
+            }}
+          >
+            <span style={{ fontSize: "14px", color: "#666" }}>
+              {new Date(post.created_at).toLocaleString()}
+            </span>
           </div>
+          <p style={{ margin: "8px 0 0", fontSize: "14px", color: "#333" }}>
+            {content}
+          </p>
         </div>
       </div>
     </div>
@@ -196,155 +198,149 @@ export default function UserNewsFeed() {
       style={{
         display: "flex",
         flexDirection: "column",
-        alignItems: "center",
-        justifyContent: "center",
         width: "40vh",
-        margin: "0 auto",
         height: "100vh",
+        margin: "0 auto",
         fontFamily: "Arial, sans-serif",
         backgroundColor: "#f0f0f0",
       }}
     >
       <div
         style={{
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-          marginBottom: "16px",
+          position: "sticky",
+          top: 0,
+          backgroundColor: "#f0f0f0",
+          zIndex: 10,
+          padding: "16px 0",
         }}
       >
-        <img
-          src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-BpDKq494k2vGEAtePMrbcfdRmb8N5d.png"
-          alt="커피 컵 로고"
+        <div
           style={{
-            width: "64px",
-            height: "64px",
-            borderRadius: "50%",
-            objectFit: "cover",
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            marginBottom: "16px",
           }}
-        />
-
-        <span
-          style={{ fontSize: "16px", fontWeight: "bold", marginTop: "8px" }}
         >
-          안녕하세요 {userName ? userName : "Guest"} 님!
-        </span>
-      </div>
-
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-          width: "100%",
-          backgroundColor: "white",
-          borderRadius: "24px",
-          padding: "8px",
-          marginBottom: "16px",
-          position: "relative",
-        }}
-      >
-        <input
-          type="text"
-          placeholder="검색..."
-          value={searchQuery}
-          onChange={handleSearchChange}
-          style={{
-            width: "100%",
-            padding: "8px 16px",
-            border: "1px solid #ccc",
-            borderRadius: "24px",
-            outline: "none",
-            boxShadow: "0 2px 8px rgba(0,0,0,0.2)",
-            backgroundColor: "white",
-            color: "black",
-          }}
-        />
-        {searchQuery && (
-          <div
+          <img
+            src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-BpDKq494k2vGEAtePMrbcfdRmb8N5d.png"
+            alt="커피 컵 로고"
             style={{
-              position: "absolute",
-              top: "100%",
-              left: 0,
-              right: 0,
-              backgroundColor: "white",
-              border: "1px solid #ccc",
-              borderRadius: "8px",
-              maxHeight: "200px",
-              overflowY: "auto",
-              boxShadow: "0 2px 8px rgba(0,0,0,0.2)",
-              zIndex: 1,
+              width: "64px",
+              height: "64px",
+              borderRadius: "50%",
+              objectFit: "cover",
             }}
+          />
+
+          <span
+            style={{ fontSize: "16px", fontWeight: "bold", marginTop: "8px" }}
           >
-            {searchResults.length > 0 ? (
-              searchResults.map((item) => (
-                <div
-                  key={item._id}
-                  style={{
-                    padding: "8px",
-                    borderBottom: "1px solid #eee",
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "center",
-                    cursor: "pointer",
-                  }}
-                >
-                  <div
-                    style={{
-                      display: "flex",
-                      gap: "12px",
-                      alignItems: "center",
-                    }}
-                  >
-                    <img
-                      src={item.image}
-                      alt={`${item.store_name} 이미지`}
-                      style={{
-                        width: "40px",
-                        height: "40px",
-                        borderRadius: "50%",
-                        objectFit: "cover",
-                      }}
-                    />
-                    <span>{item.store_name}</span>
-                  </div>
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleFollow(item._id);
-                    }}
-                    style={{
-                      background: "none",
-                      border: "none",
-                      color: "#1a73e8",
-                      cursor: "pointer",
-                      fontSize: "12px",
-                    }}
-                  >
-                    {item.followed ? "팔로우 취소" : "팔로우"}
-                  </button>
-                </div>
-              ))
-            ) : (
-              <div style={{ padding: "8px", textAlign: "center" }}>
-                검색 결과 없음
-              </div>
-            )}
-          </div>
-        )}
-      </div>
-
-      {loading ? (
-        <p>Loading...</p>
-      ) : (
-        <div style={{ width: "100%" }}>
-          {feedItems.map((post) => (
-            <FeedItem key={post._id} post={post} />
-          ))}
+            안녕하세요 {userName ? userName : "Guest"} 님!
+          </span>
         </div>
-      )}
 
-      {/* 디버그 정보 */}
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            width: "100%",
+            backgroundColor: "white",
+            borderRadius: "24px",
+            padding: "8px",
+            marginBottom: "16px",
+            position: "relative",
+          }}
+        >
+          <input
+            type="text"
+            placeholder="검색..."
+            value={searchQuery}
+            onChange={handleSearchChange}
+            style={{
+              width: "100%",
+              padding: "8px 16px",
+              border: "1px solid #ccc",
+              borderRadius: "24px",
+              outline: "none",
+              boxShadow: "0 2px 8px rgba(0,0,0,0.2)",
+              backgroundColor: "white",
+              color: "black",
+            }}
+          />
+          {searchQuery && (
+            <div
+              style={{
+                position: "absolute",
+                top: "100%",
+                left: 0,
+                right: 0,
+                backgroundColor: "white",
+                border: "1px solid #ccc",
+                borderRadius: "8px",
+                maxHeight: "200px",
+                overflowY: "auto",
+                boxShadow: "0 2px 8px rgba(0,0,0,0.2)",
+                zIndex: 1,
+              }}
+            >
+              {searchResults.length > 0 ? (
+                searchResults.map((item) => (
+                  <div
+                    key={item._id}
+                    style={{
+                      padding: "8px",
+                      borderBottom: "1px solid #eee",
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                      cursor: "pointer",
+                    }}
+                  >
+                    <div
+                      style={{
+                        display: "flex",
+                        gap: "12px",
+                        alignItems: "center",
+                      }}
+                    >
+                      <span>{item.store_name}</span>
+                    </div>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleFollow(item._id);
+                      }}
+                      style={{
+                        background: "none",
+                        border: "none",
+                        color: "#1a73e8",
+                        cursor: "pointer",
+                        fontSize: "12px",
+                      }}
+                    >
+                      {item.followed ? "팔로우 취소" : "팔로우"}
+                    </button>
+                  </div>
+                ))
+              ) : (
+                <div style={{ padding: "8px", textAlign: "center" }}>
+                  검색 결과 없음
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      </div>
+      <div style={{ flexGrow: 1, overflowY: "auto", padding: "0 16px" }}>
+        {loading ? (
+          <p>Loading...</p>
+        ) : (
+          feedItems.map((post) => <FeedItem key={post._id} post={post} />)
+        )}
+        {/* 디버그 정보 */}
+      </div>
     </div>
   );
 }
