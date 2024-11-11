@@ -33,14 +33,24 @@ const Board = () => {
 
   useEffect(() => {
     if (bossId) {
-      fetchPosts();
+      fetchPosts(bossId);
+
+      const fetchStoreName = async () => {
+        try {
+          const response = await axios.get(`http://43.201.2.61/storeInfo/${bossId}`);
+          setStore_Name(response.data.store_name);
+        } catch (error) {
+          console.error("Error fetching store name:", error);
+        }
+      };
+
       fetchStoreName();
     }
   }, [bossId]);
 
   const fetchPosts = async () => {
     try {
-      const response = await axios.get(`http://localhost:3000/posts/${bossId}`);
+      const response = await axios.get(`http://43.201.2.61/posts/${bossId}`);
       setPosts(response.data);
     } catch (error) {
       console.error("Error fetching posts:", error);
@@ -49,8 +59,8 @@ const Board = () => {
 
   const fetchStoreName = async () => {
     try {
-      const response = await axios.get(`http://localhost:3000/storeInfo/${bossId}`);
-      setStore_Name(response.data.store_name);
+      const response = await axios.get(`http://43.201.2.61/posts/${bossId}`);
+      setPosts(response.data);
     } catch (error) {
       console.error("Error fetching store name:", error);
     }
@@ -71,14 +81,11 @@ const Board = () => {
   };
 
   const handleDelete = async (id) => {
-    const postToDelete = posts.find((post) => post._id === id);
-    if (!isAmericanoPost(postToDelete)) {
-      try {
-        await axios.delete(`http://localhost:3000/posts/${id}`);
-        setPosts((prevPosts) => prevPosts.filter((post) => post._id !== id));
-      } catch (error) {
-        console.error("Error deleting post:", error);
-      }
+    try {
+      await axios.delete(`http://43.201.2.61/posts/${id}`);
+      setPosts((prevPosts) => prevPosts.filter((post) => post._id !== id));
+    } catch (error) {
+      console.error("Error deleting post:", error);
     }
   };
 

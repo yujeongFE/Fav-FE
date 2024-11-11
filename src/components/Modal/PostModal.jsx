@@ -9,6 +9,7 @@ export const PostModal = ({ writing, onClose, post, onPostUpdated, storeId }) =>
   const [crowdLevel, setCrowdLevel] = useState("");
   const [isEditing, setIsEditing] = useState(false);
   const [bossId, setBossId] = useState(null);
+  const [storeId, setStoreId] = useState(null);
   const [winner, setWinner] = useState(null);
   const [isSpinning, setIsSpinning] = useState(false);
   const [showAmericanoGame, setShowAmericanoGame] = useState(false);
@@ -46,6 +47,22 @@ export const PostModal = ({ writing, onClose, post, onPostUpdated, storeId }) =>
     }
   }, [jwtToken]);
 
+  useEffect(() => {
+    if (bossId) {
+      fetchStoreId();
+    }
+  }, [bossId]);
+
+  const fetchStoreId = async () => {
+    try {
+      const response = await axios.get(`http://43.201.2.61/storeInfo/${bossId}`);
+      setStoreId(response.data._id);
+      console.log(response.data._id);
+    } catch (error) {
+      console.error("Error fetching storeId:", error);
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -59,9 +76,9 @@ export const PostModal = ({ writing, onClose, post, onPostUpdated, storeId }) =>
     try {
       let response;
       if (isEditing && post) {
-        response = await axios.put(`http://localhost:3000/posts/${post._id}`, postData);
+        response = await axios.put(`http://43.201.2.61/posts/${post._id}`, postData);
       } else {
-        response = await axios.post("http://localhost:3000/posts", postData);
+        response = await axios.post("http://43.201.2.61/posts", postData);
       }
 
       await onPostUpdated();
@@ -69,19 +86,25 @@ export const PostModal = ({ writing, onClose, post, onPostUpdated, storeId }) =>
       setContent("");
       setCrowdLevel("");
       setIsEditing(false);
-      setShowAmericanoGame(false); // Reset game section visibility
+      setShowAmericanoGame(false);
+
     } catch (error) {
       console.error("Error posting data:", error.response || error.message);
     }
   };
 
   const selectRandomWinner = async () => {
+    if (!storeId) {
+      alert("Store ID not found.");
+      return;
+    }
+
     setIsSpinning(true);
 
     try {
-      // Fetch followers of the store using storeId
-      const response = await axios.get(`http://localhost:3000/followers/${storeId}`);
+      const response = await axios.get(`http://43.201.2.61/api/follow/${storeId}`);
       const followerIds = response.data.followers;
+      console.log(followerIds);
 
       if (followerIds.length === 0) {
         alert("No followers to choose from.");
@@ -89,21 +112,23 @@ export const PostModal = ({ writing, onClose, post, onPostUpdated, storeId }) =>
         return;
       }
 
-      // Randomly select a follower
       const randomIndex = Math.floor(Math.random() * followerIds.length);
-      const selectedFollower = followerIds[randomIndex];
-      setWinner(selectedFollower);
+      const selectedFollowerId = followerIds[randomIndex];
+
+      const usernameResponse = await axios.get(`http://43.201.2.61/guest/${selectedFollowerId}`);
+      const selectedFollowerName = usernameResponse.data.username;
+
+      setWinner(selectedFollowerName);
       setIsSpinning(false);
 
-      // Create a winner announcement post
       const winnerPostData = {
         boss_id: bossId,
-        content: `🎉 축하합니다! 랜덤 아메리카노 추첨 당첨자는: ${selectedFollower}님 입니다!`,
+        content: `🎉 축하합니다! 랜덤 아메리카노 추첨 당첨자는: ${selectedFollowerName}님 입니다!`,
         is_open: true,
         crowd_level: "LOW",
       };
 
-      await axios.post("http://localhost:3000/posts", winnerPostData);
+      await axios.post("http://43.201.2.61/posts", winnerPostData);
       await onPostUpdated();
       alert("Winner has been announced in a new post!");
     } catch (error) {
