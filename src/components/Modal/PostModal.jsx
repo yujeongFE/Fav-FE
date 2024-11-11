@@ -78,7 +78,7 @@ export const PostModal = ({ writing, onClose, post, onPostUpdated }) => {
       if (isEditing && post) {
         response = await axios.put(`http://43.201.2.61/posts/${post._id}`, postData);
       } else {
-        response = await axios.post(`http://43.201.2.61/posts`, postData);
+        response = await axios.post("http://43.201.2.61/posts", postData);
       }
 
       await onPostUpdated();
