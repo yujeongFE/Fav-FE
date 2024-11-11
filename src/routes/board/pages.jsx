@@ -13,6 +13,8 @@ const Board = () => {
   const [currentPost, setCurrentPost] = useState(null);
   const [bossId, setBossId] = useState("");
   const [store_Name, setStore_Name] = useState("");
+  const [winner, setWinner] = useState(null);
+  const [isSpinning, setIsSpinning] = useState(false);
 
   const getCookie = (cookieName) => {
     const cookies = document.cookie.split("; ");
@@ -116,9 +118,24 @@ const Board = () => {
     return date.toLocaleString("ko-KR", options);
   };
 
-  const MessageCard = ({ content, updated_at, status, postId, onEdit, onDelete }) => (
+  const selectRandomWinner = () => {
+    setIsSpinning(true);
+    setTimeout(() => {
+      const randomIndex = Math.floor(Math.random() * posts.length);
+      setWinner(posts[randomIndex]);
+      setIsSpinning(false);
+    }, 2000);
+  };
+
+  const resetWinner = () => {
+    setWinner(null);
+  };
+
+  const MessageCard = ({ content, updated_at, status, postId, onEdit, onDelete, isWinner }) => (
     <div
-      className={`card mb-3 shadow-sm rounded-lg ${status === "busy" ? "border-danger" : "border-success"}`}>
+      className={`card mb-3 shadow-sm rounded-lg ${status === "busy" ? "border-danger" : "border-success"} ${
+        isWinner ? "border-primary border-4" : ""
+      }`}>
       <div className="card-body">
         <div className="d-flex align-items-center">
           <img
@@ -140,7 +157,6 @@ const Board = () => {
               {status === "HIGH" ? "혼잡해요" : status === "MEDIUM" ? "보통이에요" : "여유로워요"}
             </span>
           )}
-
           <div className="ms-3">
             <button className="btn btn-sm btn-outline-warning" onClick={() => onEdit(postId)}>
               <i className="bi bi-pencil"></i> 수정
@@ -166,6 +182,42 @@ const Board = () => {
         </button>
       </div>
 
+      <div className="mb-4">
+        <h2 className="h4 mb-3">랜덤 아메리카노 게임</h2>
+        <button
+          className="btn btn-success me-2"
+          onClick={selectRandomWinner}
+          disabled={isSpinning || posts.length === 0}>
+          {isSpinning ? (
+            <>
+              <span
+                className="spinner-border spinner-border-sm me-2"
+                role="status"
+                aria-hidden="true"></span>
+              선택 중...
+            </>
+          ) : (
+            <>
+              <i className="bi bi-cup-hot me-2"></i>
+              당첨자 뽑기
+            </>
+          )}
+        </button>
+        <button className="btn btn-outline-secondary" onClick={resetWinner} disabled={!winner}>
+          <i className="bi bi-arrow-counterclockwise me-2"></i>
+          초기화
+        </button>
+      </div>
+
+      {winner && (
+        <div className="alert alert-success mb-4" role="alert">
+          <h4 className="alert-heading">🎉 당첨자</h4>
+          <p>{winner.content}</p>
+          <hr />
+          <p className="mb-0">작성 시간: {formatDate(winner.updated_at)}</p>
+        </div>
+      )}
+
       <div className="overflow-auto">
         {posts.map((post) => (
           <MessageCard
@@ -176,6 +228,7 @@ const Board = () => {
             status={post.crowd_level}
             onEdit={handleEdit}
             onDelete={handleDelete}
+            isWinner={winner && winner._id === post._id}
           />
         ))}
       </div>
