@@ -30,6 +30,7 @@ const fetchFollowedPosts = async (userId) => {
         },
       }
     );
+
     if (!response.ok) {
       throw new Error("Failed to fetch posts");
     }
@@ -128,7 +129,7 @@ export default function UserNewsFeed() {
 
       console.log("팔로우 요청 보내는 중:", { userId, storeId });
 
-      const response = await fetch("http://localhost:3000/api/follow", {
+      const response = await fetch("http://43.201.2.61/api/follow", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -177,14 +178,13 @@ export default function UserNewsFeed() {
     } else {
       try {
         const token = Cookies.get("authToken");
-        const response = await fetch(
-          `http://localhost:3000/storeinfo/search?q=${query}`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
+
+        const response = await fetch(`http://43.201.2.61/storeinfo/search?q=${query}`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
         const results = await response.json();
         setSearchResults(results);
       } catch (error) {

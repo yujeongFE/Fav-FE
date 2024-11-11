@@ -34,7 +34,7 @@ export default function Login() {
 
     try {
       const response = await axios.post(
-        "http://localhost:3000/api/login",
+        "http://43.201.2.61/api/login",
         { email, password },
         { withCredentials: true }
       );
@@ -210,7 +210,7 @@ export default function Login() {
           </button>
           <button
             type="button"
-            onClick={() => navigate("/signup")}
+            onClick={() => navigate("/page/signup")}
             onMouseEnter={() => setSignupHover(true)}
             onMouseLeave={() => setSignupHover(false)}
             style={{
