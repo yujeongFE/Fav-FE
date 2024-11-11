@@ -19,3 +19,8 @@ feat/#이슈번호-기능요약
 
 ### 3. Pull Request
 dev <- feat/#이슈번호-기능요약
+
+
+실행 동영상
+https://github.com/user-attachments/assets/9b1c8788-7c85-4fd7-a921-d50e93a08cb4
+
