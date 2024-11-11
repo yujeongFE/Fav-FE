@@ -55,10 +55,9 @@ const StoreRegistration = () => {
   useEffect(() => {
     if (bossId) {
       axios
-        .get(`http://43.201.2.61:3000/storeInfo/${bossId}`)
+        .get(`http://43.201.2.61/storeInfo/${bossId}`)
         .then((response) => {
-          const { store_name, store_address, store_info, store_photo } =
-            response.data || {};
+          const { store_name, store_address, store_info, store_photo } = response.data || {};
           setStoreName(store_name || "");
           setStoreAddress(store_address || "");
           setStoreDescription(store_info || "");
@@ -79,10 +78,10 @@ const StoreRegistration = () => {
 
     try {
       if (isEditing) {
-        await axios.put(`http://43.201.2.61:3000/storeInfo/${bossId}`, formData);
+        await axios.put(`http://43.201.2.61/storeInfo/${bossId}`, formData);
         alert("가게 정보가 성공적으로 수정되었습니다!");
       } else {
-        await axios.post(`http://43.201.2.61:3000/storeInfo/${bossId}`, formData);
+        await axios.post(`http://43.201.2.61/storeInfo/${bossId}`, formData);
         alert("가게가 성공적으로 등록되었습니다!");
       }
       resetForm();
@@ -96,7 +95,7 @@ const StoreRegistration = () => {
   const handleDelete = async () => {
     if (window.confirm("정말로 가게 정보를 삭제하시겠습니까?")) {
       try {
-        await axios.delete(`http://43.201.2.61:3000/storeInfo/${bossId}`);
+        await axios.delete(`http://43.201.2.61/storeInfo/${bossId}`);
         alert("가게 정보가 성공적으로 삭제되었습니다!");
         resetForm();
         navigate("/dashboard");
@@ -117,8 +116,7 @@ const StoreRegistration = () => {
     <Container
       fluid
       className="d-flex align-items-center justify-content-center min-vh-100 vw-100"
-      style={{ backgroundColor: "#FFECB3" }}
-    >
+      style={{ backgroundColor: "#FFECB3" }}>
       <Row className="justify-content-center w-100">
         <Col xs={12} md={8} lg={6}>
           <Card className="shadow-lg">
@@ -126,8 +124,7 @@ const StoreRegistration = () => {
               <div className="text-center mb-4">
                 <div
                   className="d-inline-flex align-items-center justify-content-center bg-white rounded-circle shadow-sm"
-                  style={{ width: "64px", height: "64px" }}
-                >
+                  style={{ width: "64px", height: "64px" }}>
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     width="32"
@@ -137,8 +134,7 @@ const StoreRegistration = () => {
                     stroke="#6B4B35"
                     strokeWidth="2"
                     strokeLinecap="round"
-                    strokeLinejoin="round"
-                  >
+                    strokeLinejoin="round">
                     <path d="M18 8h1a4 4 0 0 1 0 8h-1"></path>
                     <path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"></path>
                     <line x1="6" y1="1" x2="6" y2="4"></line>
@@ -148,9 +144,7 @@ const StoreRegistration = () => {
                 </div>
                 <h2 className="mt-3 mb-1">안녕하세요, 사장님!</h2>
                 <p className="text-muted">
-                  {isEditing
-                    ? "가게 정보를 수정하세요"
-                    : "가게 정보를 입력해주세요"}
+                  {isEditing ? "가게 정보를 수정하세요" : "가게 정보를 입력해주세요"}
                 </p>
               </div>
 
@@ -190,11 +184,8 @@ const StoreRegistration = () => {
                   <div className="d-flex align-items-center">
                     <Button
                       variant="outline-secondary"
-                      onClick={() =>
-                        document.getElementById("storeImage").click()
-                      }
-                      className="d-flex align-items-center"
-                    >
+                      onClick={() => document.getElementById("storeImage").click()}
+                      className="d-flex align-items-center">
                       파일 선택
                     </Button>
                     <Form.Control
@@ -204,9 +195,7 @@ const StoreRegistration = () => {
                       accept="image/*"
                       style={{ display: "none" }}
                     />
-                    {fileName && (
-                      <span className="ms-2 text-muted">{fileName}</span>
-                    )}
+                    {fileName && <span className="ms-2 text-muted">{fileName}</span>}
                   </div>
                 </Form.Group>
 
@@ -214,8 +203,7 @@ const StoreRegistration = () => {
                   type="submit"
                   variant="primary"
                   className="w-100 py-2 mb-2"
-                  style={{ backgroundColor: "#4A90E2", borderColor: "#4A90E2" }}
-                >
+                  style={{ backgroundColor: "#4A90E2", borderColor: "#4A90E2" }}>
                   {isEditing ? "가게 정보 수정하기" : "가게 등록하기"}
                 </Button>
 
@@ -224,8 +212,7 @@ const StoreRegistration = () => {
                     type="button"
                     variant="danger"
                     className="w-100 py-2"
-                    onClick={handleDelete}
-                  >
+                    onClick={handleDelete}>
                     가게 삭제하기
                   </Button>
                 )}

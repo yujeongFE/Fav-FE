@@ -8,28 +8,28 @@ const Sidebar = () => {
   const [activeNav, setActiveNav] = useState("");
 
   useEffect(() => {
-    if (location.pathname === "/board") {
+    if (location.pathname === "/page/board") {
       setActiveNav("board");
-    } else if (location.pathname === "/dashboard") {
+    } else if (location.pathname === "/page/dashboard") {
       setActiveNav("dashboard");
-    } else if (location.pathname === "/storeInfo") {
+    } else if (location.pathname === "/page/storeInfo") {
       setActiveNav("storeInfo");
     }
   }, [location.pathname]);
 
   const handleClickBoard = () => {
     setActiveNav("board");
-    navigate("/board");
+    navigate("/page/board");
   };
 
   const handleClickDash = () => {
     setActiveNav("dashboard");
-    navigate("/dashboard");
+    navigate("/page/dashboard");
   };
 
   const handleClickStore = () => {
     setActiveNav("storeInfo");
-    navigate("/storeInfo");
+    navigate("/page/storeInfo");
   };
 
   return (
@@ -40,15 +40,13 @@ const Sidebar = () => {
         padding: "20px",
         display: "flex",
         flexDirection: "column",
-      }}
-    >
+      }}>
       <div
         style={{
           display: "flex",
           alignItems: "center",
           marginBottom: "40px",
-        }}
-      >
+        }}>
         <Logo />
         <span style={{ fontWeight: "bold", fontSize: "18px", position: "relative", top: "2px" }}>
           Fav
@@ -70,8 +68,7 @@ const Sidebar = () => {
             cursor: "pointer",
             textAlign: "left",
             fontSize: "14px",
-          }}
-        >
+          }}>
           <span style={{ marginRight: "10px", color: "black" }}>📊 대시보드</span>
         </button>
 
@@ -89,8 +86,7 @@ const Sidebar = () => {
             cursor: "pointer",
             textAlign: "left",
             fontSize: "14px",
-          }}
-        >
+          }}>
           <span style={{ marginRight: "10px", color: "black" }}>📋 게시판</span>
         </button>
 
@@ -108,8 +104,7 @@ const Sidebar = () => {
             cursor: "pointer",
             textAlign: "left",
             fontSize: "14px",
-          }}
-        >
+          }}>
           <span style={{ marginRight: "10px", color: "black" }}>🏪 가게 정보</span>
         </button>
       </nav>
