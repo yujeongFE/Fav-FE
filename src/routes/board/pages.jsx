@@ -50,7 +50,7 @@ const Board = () => {
 
   const fetchPosts = async () => {
     try {
-      const response = await axios.get(`http://43.201.2.61/posts/${bossId}`);
+      const response = await axios.get(`http://43.201.2.61/posts/`);
       setPosts(response.data);
     } catch (error) {
       console.error("Error fetching posts:", error);
