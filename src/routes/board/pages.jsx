@@ -49,7 +49,7 @@ const Board = () => {
       const fetchStoreName = async () => {
         try {
           const response = await axios.get(`http://localhost:3000/storeInfo/${bossId}`);
-          setStore_Name(response.data.storeName);
+          setStore_Name(response.data.store_name);
         } catch (error) {
           console.error("Error fetching store name:", error);
         }
@@ -85,7 +85,6 @@ const Board = () => {
 
   const handlePostUpdated = async (updatedPost) => {
     try {
-      // 글이 등록 또는 수정된 후 서버에서 최신 글 목록을 다시 가져옵니다.
       const response = await axios.get(`http://localhost:3000/posts/${bossId}`);
       setPosts(response.data);
     } catch (error) {
