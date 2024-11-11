@@ -96,7 +96,6 @@ export default function SignupForm() {
     if (validateEmail() && validatePassword() && validateUserTypeFields()) {
       try {
         const endpoint = userType === "boss" ? "/boss/signup" : "/guest/signup";
-
         await axios.post(`http://43.201.2.61/${endpoint}`, formData, { withCredentials: true });
         navigate("/");
       } catch (error) {

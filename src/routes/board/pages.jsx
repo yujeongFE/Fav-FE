@@ -16,31 +16,18 @@ const Board = () => {
   const [winner, setWinner] = useState(null);
   const [isSpinning, setIsSpinning] = useState(false);
 
-  const getCookie = (cookieName) => {
-    const cookies = document.cookie.split("; ");
-    for (let cookie of cookies) {
-      const [name, value] = cookie.split("=");
-      if (name === cookieName) return value;
-    }
-    return null;
-  };
-
-  const jwtToken = getCookie("authToken");
+  const jwtToken = document.cookie
+    .split("; ")
+    .find((cookie) => cookie.startsWith("authToken"))
+    ?.split("=")[1];
   useEffect(() => {
     if (jwtToken) {
       try {
-        const decoded = jwtDecode(jwtToken);
-        console.log(decoded);
-
-        const bossId = decoded._id;
+        const { _id: bossId } = jwtDecode(jwtToken);
         setBossId(bossId);
-
-        console.log(`User ID: ${decoded._id}`);
       } catch (error) {
         console.error("Invalid JWT Token:", error);
       }
-    } else {
-      console.log("JWT token not found in cookies");
     }
   }, [jwtToken]);
 
@@ -61,15 +48,6 @@ const Board = () => {
     }
   }, [bossId]);
 
-  const handleModalOpen = () => {
-    setWriting(true);
-  };
-
-  const handleModalClose = () => {
-    setWriting(false);
-    setCurrentPost(null);
-  };
-
   const fetchPosts = async () => {
     try {
       const response = await axios.get(`http://43.201.2.61/posts/${bossId}`);
@@ -79,18 +57,26 @@ const Board = () => {
     }
   };
 
-  const handleEdit = (id) => {
-    const postToEdit = posts.find((post) => post._id === id);
-    setCurrentPost(postToEdit);
-    setWriting(true);
-  };
-
-  const handlePostUpdated = async (updatedPost) => {
+  const fetchStoreName = async () => {
     try {
       const response = await axios.get(`http://43.201.2.61/posts/${bossId}`);
       setPosts(response.data);
     } catch (error) {
-      console.error("Error fetching updated posts:", error);
+      console.error("Error fetching store name:", error);
+    }
+  };
+
+  const handleModalOpen = () => setWriting(true);
+  const handleModalClose = () => {
+    setWriting(false);
+    setCurrentPost(null);
+  };
+
+  const handleEdit = (id) => {
+    const postToEdit = posts.find((post) => post._id === id);
+    if (!isAmericanoPost(postToEdit)) {
+      setCurrentPost(postToEdit);
+      setWriting(true);
     }
   };
 
@@ -105,7 +91,7 @@ const Board = () => {
 
   const formatDate = (dateString) => {
     const date = new Date(dateString);
-    const options = {
+    return date.toLocaleString("ko-KR", {
       year: "numeric",
       month: "long",
       day: "numeric",
@@ -113,138 +99,102 @@ const Board = () => {
       minute: "2-digit",
       second: "2-digit",
       hour12: true,
-    };
-    return date.toLocaleString("ko-KR", options);
+    });
   };
 
   const selectRandomWinner = () => {
     setIsSpinning(true);
     setTimeout(() => {
-      const randomIndex = Math.floor(Math.random() * posts.length);
-      setWinner(posts[randomIndex]);
+      setWinner(posts[Math.floor(Math.random() * posts.length)]);
       setIsSpinning(false);
     }, 2000);
   };
 
-  const resetWinner = () => {
-    setWinner(null);
+  const resetWinner = () => setWinner(null);
+
+  const isAmericanoPost = (post) => {
+    return (
+      post.content && post.content.includes("Congratulations! The winner for the Americano is:")
+    );
   };
-
-  const MessageCard = ({ content, updated_at, status, postId, onEdit, onDelete, isWinner }) => (
-    <div
-      className={`card mb-3 shadow-sm rounded-lg ${status === "busy" ? "border-danger" : "border-success"} ${
-        isWinner ? "border-primary border-4" : ""
-      }`}>
-      <div className="card-body">
-        <div className="d-flex align-items-center">
-          <img
-            src="https://github.com/mdo.png"
-            alt="User Avatar"
-            width="40"
-            height="40"
-            className="rounded-circle me-3"
-          />
-          <div className="flex-grow-1">
-            <p className="mb-1 text-truncate">{content}</p>
-            <small className="text-muted">{formatDate(updated_at)}</small>
-          </div>
-          {status && (
-            <span
-              className={`badge ${
-                status === "HIGH" ? "bg-danger" : status === "MEDIUM" ? "bg-warning" : "bg-success"
-              }`}>
-              {status === "HIGH" ? "혼잡해요" : status === "MEDIUM" ? "보통이에요" : "여유로워요"}
-            </span>
-          )}
-          <div className="ms-3">
-            <button className="btn btn-sm btn-outline-warning" onClick={() => onEdit(postId)}>
-              <i className="bi bi-pencil"></i> 수정
-            </button>
-            <button className="btn btn-sm btn-outline-danger ms-2" onClick={() => onDelete(postId)}>
-              <i className="bi bi-trash"></i> 삭제
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-
-  const MainContent = () => (
-    <main className="flex-grow-1 p-4 white">
-      <div className="d-flex justify-content-between align-items-center mb-4">
-        <div>
-          <h1 className="h2 fw-bold">{store_Name}</h1>
-          <button className="btn btn-outline-primary mt-2 me-2">사장님</button>
-        </div>
-        <button className="btn btn-primary" onClick={handleModalOpen}>
-          <i className="bi bi-plus-circle me-2"></i> 글 추가하기
-        </button>
-      </div>
-
-      <div className="mb-4">
-        <h2 className="h4 mb-3">랜덤 아메리카노 게임</h2>
-        <button
-          className="btn btn-success me-2"
-          onClick={selectRandomWinner}
-          disabled={isSpinning || posts.length === 0}>
-          {isSpinning ? (
-            <>
-              <span
-                className="spinner-border spinner-border-sm me-2"
-                role="status"
-                aria-hidden="true"></span>
-              선택 중...
-            </>
-          ) : (
-            <>
-              <i className="bi bi-cup-hot me-2"></i>
-              당첨자 뽑기
-            </>
-          )}
-        </button>
-        <button className="btn btn-outline-secondary" onClick={resetWinner} disabled={!winner}>
-          <i className="bi bi-arrow-counterclockwise me-2"></i>
-          초기화
-        </button>
-      </div>
-
-      {winner && (
-        <div className="alert alert-success mb-4" role="alert">
-          <h4 className="alert-heading">🎉 당첨자</h4>
-          <p>{winner.content}</p>
-          <hr />
-          <p className="mb-0">작성 시간: {formatDate(winner.updated_at)}</p>
-        </div>
-      )}
-
-      <div className="overflow-auto">
-        {posts.map((post) => (
-          <MessageCard
-            key={post._id}
-            postId={post._id}
-            content={post.content}
-            updated_at={post.updated_at}
-            status={post.crowd_level}
-            onEdit={handleEdit}
-            onDelete={handleDelete}
-            isWinner={winner && winner._id === post._id}
-          />
-        ))}
-      </div>
-    </main>
-  );
 
   return (
     <div className="d-flex vh-100 vw-100">
       <Sidebar writing={writing} />
       <div className="d-flex flex-column flex-grow-1 overflow-hidden">
         <Header />
-        <MainContent />
+        <main className="flex-grow-1 p-4 white">
+          <div className="d-flex justify-content-between align-items-center mb-4">
+            <h1 className="h2 fw-bold">{store_Name}</h1>
+            <button className="btn btn-primary" onClick={handleModalOpen}>
+              <i className="bi bi-plus-circle me-2"></i> 글 추가하기
+            </button>
+          </div>
+
+          {winner && (
+            <div className="alert alert-success mb-4" role="alert">
+              <h4 className="alert-heading">🎉 당첨자</h4>
+              <p>{winner.content}</p>
+              <hr />
+              <p className="mb-0">작성 시간: {formatDate(winner.updated_at)}</p>
+            </div>
+          )}
+
+          <div className="overflow-auto">
+            {posts.map((post) => (
+              <div
+                key={post._id}
+                className={`card mb-3 shadow-sm rounded-lg ${post.crowd_level === "busy" ? "border-danger" : "border-success"} ${winner && winner._id === post._id ? "border-primary border-4" : ""}`}>
+                <div className="card-body">
+                  <div className="d-flex align-items-center">
+                    <img
+                      src="https://github.com/mdo.png"
+                      alt="User Avatar"
+                      width="40"
+                      height="40"
+                      className="rounded-circle me-3"
+                    />
+                    <div className="flex-grow-1">
+                      <p className="mb-1 text-truncate">{post.content}</p>
+                      <small className="text-muted">{formatDate(post.updated_at)}</small>
+                    </div>
+                    {!isAmericanoPost(post) && ( // Hide crowd level badge for Americano posts
+                      <span
+                        className={`badge ${post.crowd_level === "HIGH" ? "bg-danger" : post.crowd_level === "MEDIUM" ? "bg-warning" : "bg-success"}`}>
+                        {post.crowd_level === "HIGH"
+                          ? "혼잡해요"
+                          : post.crowd_level === "MEDIUM"
+                            ? "보통이에요"
+                            : "여유로워요"}
+                      </span>
+                    )}
+                    <div className="ms-3">
+                      {!isAmericanoPost(post) && (
+                        <>
+                          <button
+                            className="btn btn-sm btn-outline-warning"
+                            onClick={() => handleEdit(post._id)}>
+                            <i className="bi bi-pencil"></i> 수정
+                          </button>
+                          <button
+                            className="btn btn-sm btn-outline-danger ms-2"
+                            onClick={() => handleDelete(post._id)}>
+                            <i className="bi bi-trash"></i> 삭제
+                          </button>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </main>
         <PostModal
           writing={writing}
           onClose={handleModalClose}
           post={currentPost}
-          onPostUpdated={handlePostUpdated}
+          onPostUpdated={fetchPosts}
         />
       </div>
     </div>

@@ -4,7 +4,7 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap-icons/font/bootstrap-icons.css";
 import { jwtDecode } from "jwt-decode";
 
-export const PostModal = ({ writing, onClose, post, onPostUpdated }) => {
+export const PostModal = ({ writing, onClose, post, onPostUpdated, storeId }) => {
   const [content, setContent] = useState("");
   const [crowdLevel, setCrowdLevel] = useState("");
   const [isEditing, setIsEditing] = useState(false);
@@ -87,6 +87,7 @@ export const PostModal = ({ writing, onClose, post, onPostUpdated }) => {
       setCrowdLevel("");
       setIsEditing(false);
       setShowAmericanoGame(false);
+
     } catch (error) {
       console.error("Error posting data:", error.response || error.message);
     }
