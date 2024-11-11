@@ -169,7 +169,7 @@ export default function UserNewsFeed() {
       try {
         const token = Cookies.get("authToken");
 
-        const response = await fetch(`http://43.201.2.61/storeinfo/search?q=${query}`, {
+        const response = await fetch(`http://43.201.2.61/storeInfo/search?q=${query}`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
