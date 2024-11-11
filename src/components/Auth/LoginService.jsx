@@ -42,7 +42,7 @@ export default function Login() {
         const { redirectPath } = response.data;
 
         setErrorMessage("");
-        navigate(redirectPath);
+        navigate(`/page${redirectPath}`);
       } else {
         alert("일치하는 회원이 존재하지 않습니다.");
       }
