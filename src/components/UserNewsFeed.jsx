@@ -22,14 +22,11 @@ const fetchFollowedPosts = async (userId) => {
   try {
     const token = Cookies.get("authToken");
     console.log("Fetching posts for user:", userId);
-    const response = await fetch(
-      `http://localhost:3000/posts/followed/${userId}`,
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      }
-    );
+    const response = await fetch(`http://43.201.2.61/posts/followed/${userId}`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
 
     if (!response.ok) {
       throw new Error("Failed to fetch posts");
@@ -57,8 +54,7 @@ function FeedItem({ post }) {
         padding: "16px",
         marginBottom: "10px",
         backgroundColor: "white",
-      }}
-    >
+      }}>
       <div style={{ display: "flex", gap: "12px" }}>
         <div style={{ flex: 1 }}>
           <h2
@@ -67,8 +63,7 @@ function FeedItem({ post }) {
               fontSize: "18px",
               fontWeight: "bold",
               marginBottom: "4px",
-            }}
-          >
+            }}>
             {storeName}
           </h2>
           <div
@@ -77,15 +72,12 @@ function FeedItem({ post }) {
               alignItems: "center",
               gap: "8px",
               marginBottom: "8px",
-            }}
-          >
+            }}>
             <span style={{ fontSize: "14px", color: "#666" }}>
               {new Date(post.created_at).toLocaleString()}
             </span>
           </div>
-          <p style={{ margin: "8px 0 0", fontSize: "14px", color: "#333" }}>
-            {content}
-          </p>
+          <p style={{ margin: "8px 0 0", fontSize: "14px", color: "#333" }}>{content}</p>
         </div>
       </div>
     </div>
@@ -157,9 +149,7 @@ export default function UserNewsFeed() {
       const result = await sendFollowRequest(storeId);
       console.log("Follow/Unfollow result:", result);
       setSearchResults((prev) =>
-        prev.map((item) =>
-          item._id === storeId ? { ...item, followed: !item.followed } : item
-        )
+        prev.map((item) => (item._id === storeId ? { ...item, followed: !item.followed } : item))
       );
       // 팔로우/언팔로우 후 즉시 피드 새로고침
       const updatedFeed = await fetchFollowedPosts(userId);
@@ -203,8 +193,7 @@ export default function UserNewsFeed() {
         margin: "0 auto",
         fontFamily: "Arial, sans-serif",
         backgroundColor: "#f0f0f0",
-      }}
-    >
+      }}>
       <div
         style={{
           position: "sticky",
@@ -212,16 +201,14 @@ export default function UserNewsFeed() {
           backgroundColor: "#f0f0f0",
           zIndex: 10,
           padding: "16px 0",
-        }}
-      >
+        }}>
         <div
           style={{
             display: "flex",
             flexDirection: "column",
             alignItems: "center",
             marginBottom: "16px",
-          }}
-        >
+          }}>
           <img
             src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-BpDKq494k2vGEAtePMrbcfdRmb8N5d.png"
             alt="커피 컵 로고"
@@ -233,9 +220,7 @@ export default function UserNewsFeed() {
             }}
           />
 
-          <span
-            style={{ fontSize: "16px", fontWeight: "bold", marginTop: "8px" }}
-          >
+          <span style={{ fontSize: "16px", fontWeight: "bold", marginTop: "8px" }}>
             안녕하세요 {userName ? userName : "Guest"} 님!
           </span>
         </div>
@@ -251,8 +236,7 @@ export default function UserNewsFeed() {
             padding: "8px",
             marginBottom: "16px",
             position: "relative",
-          }}
-        >
+          }}>
           <input
             type="text"
             placeholder="검색..."
@@ -283,8 +267,7 @@ export default function UserNewsFeed() {
                 overflowY: "auto",
                 boxShadow: "0 2px 8px rgba(0,0,0,0.2)",
                 zIndex: 1,
-              }}
-            >
+              }}>
               {searchResults.length > 0 ? (
                 searchResults.map((item) => (
                   <div
@@ -296,15 +279,13 @@ export default function UserNewsFeed() {
                       justifyContent: "space-between",
                       alignItems: "center",
                       cursor: "pointer",
-                    }}
-                  >
+                    }}>
                     <div
                       style={{
                         display: "flex",
                         gap: "12px",
                         alignItems: "center",
-                      }}
-                    >
+                      }}>
                       <span>{item.store_name}</span>
                     </div>
                     <button
@@ -318,16 +299,13 @@ export default function UserNewsFeed() {
                         color: "#1a73e8",
                         cursor: "pointer",
                         fontSize: "12px",
-                      }}
-                    >
+                      }}>
                       {item.followed ? "팔로우 취소" : "팔로우"}
                     </button>
                   </div>
                 ))
               ) : (
-                <div style={{ padding: "8px", textAlign: "center" }}>
-                  검색 결과 없음
-                </div>
+                <div style={{ padding: "8px", textAlign: "center" }}>검색 결과 없음</div>
               )}
             </div>
           )}
