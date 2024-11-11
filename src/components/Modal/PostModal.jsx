@@ -4,7 +4,7 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap-icons/font/bootstrap-icons.css";
 import { jwtDecode } from "jwt-decode";
 
-export const PostModal = ({ writing, onClose, post, onPostUpdated, storeId }) => {
+export const PostModal = ({ writing, onClose, post, onPostUpdated }) => {
   const [content, setContent] = useState("");
   const [crowdLevel, setCrowdLevel] = useState("");
   const [isEditing, setIsEditing] = useState(false);
