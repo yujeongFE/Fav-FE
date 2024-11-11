@@ -1,4 +1,4 @@
-import UserNewsFeed from "../../components/userNewsFeed";
+import UserNewsFeed from "../../components/UserNewsFeed";
 
 const Userboard = () => {
   return (
