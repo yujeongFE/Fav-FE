@@ -9,7 +9,7 @@ export const PostModal = ({ writing, onClose, post, onPostUpdated }) => {
   const [crowdLevel, setCrowdLevel] = useState("");
   const [isEditing, setIsEditing] = useState(false);
   const [bossId, setBossId] = useState(null);
-  const [storeId, setStoreId] = useState(null); 
+  const [storeId, setStoreId] = useState(null);
   const [winner, setWinner] = useState(null);
   const [isSpinning, setIsSpinning] = useState(false);
   const [showAmericanoGame, setShowAmericanoGame] = useState(false);
@@ -55,7 +55,7 @@ export const PostModal = ({ writing, onClose, post, onPostUpdated }) => {
 
   const fetchStoreId = async () => {
     try {
-      const response = await axios.get(`http://localhost:3000/storeInfo/${bossId}`);
+      const response = await axios.get(`http://43.201.2.61/storeInfo/${bossId}`);
       setStoreId(response.data._id);
       console.log(response.data._id);
     } catch (error) {
@@ -76,9 +76,9 @@ export const PostModal = ({ writing, onClose, post, onPostUpdated }) => {
     try {
       let response;
       if (isEditing && post) {
-        response = await axios.put(`http://localhost:3000/posts/${post._id}`, postData);
+        response = await axios.put(`http://43.201.2.61/posts/${post._id}`, postData);
       } else {
-        response = await axios.post("http://localhost:3000/posts", postData);
+        response = await axios.post("http://43.201.2.61/posts", postData);
       }
 
       await onPostUpdated();
@@ -86,7 +86,7 @@ export const PostModal = ({ writing, onClose, post, onPostUpdated }) => {
       setContent("");
       setCrowdLevel("");
       setIsEditing(false);
-      setShowAmericanoGame(false); 
+      setShowAmericanoGame(false);
     } catch (error) {
       console.error("Error posting data:", error.response || error.message);
     }
@@ -101,7 +101,7 @@ export const PostModal = ({ writing, onClose, post, onPostUpdated }) => {
     setIsSpinning(true);
 
     try {
-      const response = await axios.get(`http://localhost:3000/api/follow/${storeId}`);
+      const response = await axios.get(`http://43.201.2.61/api/follow/${storeId}`);
       const followerIds = response.data.followers;
       console.log(followerIds);
 
@@ -114,8 +114,8 @@ export const PostModal = ({ writing, onClose, post, onPostUpdated }) => {
       const randomIndex = Math.floor(Math.random() * followerIds.length);
       const selectedFollowerId = followerIds[randomIndex];
 
-      const usernameResponse = await axios.get(`http://localhost:3000/guest/${selectedFollowerId}`);
-      const selectedFollowerName = usernameResponse.data.username; 
+      const usernameResponse = await axios.get(`http://43.201.2.61/guest/${selectedFollowerId}`);
+      const selectedFollowerName = usernameResponse.data.username;
 
       setWinner(selectedFollowerName);
       setIsSpinning(false);
@@ -127,7 +127,7 @@ export const PostModal = ({ writing, onClose, post, onPostUpdated }) => {
         crowd_level: "LOW",
       };
 
-      await axios.post("http://localhost:3000/posts", winnerPostData);
+      await axios.post("http://43.201.2.61/posts", winnerPostData);
       await onPostUpdated();
       alert("Winner has been announced in a new post!");
     } catch (error) {

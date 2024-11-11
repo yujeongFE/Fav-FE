@@ -97,7 +97,7 @@ export default function SignupForm() {
       try {
         const endpoint = userType === "boss" ? "/boss/signup" : "/guest/signup";
 
-        await axios.post(`http://localhost:3000/${endpoint}`, formData, { withCredentials: true });
+        await axios.post(`http://43.201.2.61/${endpoint}`, formData, { withCredentials: true });
         navigate("/");
       } catch (error) {
         console.log("회원가입 오류: ", error);

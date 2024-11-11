@@ -50,7 +50,7 @@ const Board = () => {
 
       const fetchStoreName = async () => {
         try {
-          const response = await axios.get(`http://localhost:3000/storeInfo/${bossId}`);
+          const response = await axios.get(`http://43.201.2.61/storeInfo/${bossId}`);
           setStore_Name(response.data.store_name);
         } catch (error) {
           console.error("Error fetching store name:", error);
@@ -72,7 +72,7 @@ const Board = () => {
 
   const fetchPosts = async () => {
     try {
-      const response = await axios.get(`http://localhost:3000/posts/${bossId}`);
+      const response = await axios.get(`http://43.201.2.61/posts/${bossId}`);
       setPosts(response.data);
     } catch (error) {
       console.error("Error fetching posts:", error);
@@ -87,7 +87,7 @@ const Board = () => {
 
   const handlePostUpdated = async (updatedPost) => {
     try {
-      const response = await axios.get(`http://localhost:3000/posts/${bossId}`);
+      const response = await axios.get(`http://43.201.2.61/posts/${bossId}`);
       setPosts(response.data);
     } catch (error) {
       console.error("Error fetching updated posts:", error);
@@ -96,7 +96,7 @@ const Board = () => {
 
   const handleDelete = async (id) => {
     try {
-      await axios.delete(`http://localhost:3000/posts/${id}`);
+      await axios.delete(`http://43.201.2.61/posts/${id}`);
       setPosts((prevPosts) => prevPosts.filter((post) => post._id !== id));
     } catch (error) {
       console.error("Error deleting post:", error);
