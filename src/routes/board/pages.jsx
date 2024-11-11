@@ -5,6 +5,7 @@ import "bootstrap-icons/font/bootstrap-icons.css";
 import Sidebar from "../../components/SideBar/Sidebar";
 import { Header } from "../../components/Header/Header";
 import { PostModal } from "../../components/Modal/PostModal";
+import { jwtDecode } from "jwt-decode";
 
 const Board = () => {
   const [writing, setWriting] = useState(false);
@@ -69,16 +70,12 @@ const Board = () => {
 
   const fetchPosts = async () => {
     try {
-      const response = await axios.get("http://localhost:3000/posts");
+      const response = await axios.get(`http://localhost:3000/posts/${bossId}`);
       setPosts(response.data);
     } catch (error) {
       console.error("Error fetching posts:", error);
     }
   };
-
-  useEffect(() => {
-    fetchPosts();
-  }, []);
 
   const handleEdit = (id) => {
     const postToEdit = posts.find((post) => post._id === id);
@@ -160,7 +157,7 @@ const Board = () => {
     <main className="flex-grow-1 p-4 white">
       <div className="d-flex justify-content-between align-items-center mb-4">
         <div>
-          <h1 className="h2 fw-bold">메가커피 성수역점</h1>
+          <h1 className="h2 fw-bold">{store_Name}</h1>
           <button className="btn btn-outline-primary mt-2 me-2">사장님</button>
         </div>
         <button className="btn btn-primary" onClick={handleModalOpen}>
